@@ -16,9 +16,9 @@ def Headers(api_key):
         }
 
 def get_summoner_id(summoner_name):
-    api_key = fc.GET_KEY("lolapi.txt")
+    api_key = fc.GET_KEY("lol.txt")
     URL = f"{default_URL}/lol/summoner/v4/summoners/by-name/{summoner_name}"
-    Header = Headers(api_key)
+    Header = Headers(api_key[0])
     res = requests.get(url=URL,headers=Header)
     if int(res.status_code) == 200:
         summoner = res.json()

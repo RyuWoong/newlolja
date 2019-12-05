@@ -17,11 +17,19 @@ def check_admin(ctx):
     check = admin.administrator
     return check
 
-def check_leader(ctx,team_name):
+def check_leader(ctx):
     member = ctx.message.author
     leader = get(member.roles,name="파티장")
     check = False
     if leader != None:
+        check = True
+    return check
+
+def check_streamer(ctx):
+    member = ctx.message.author
+    streamer = get(member.rolse,name="스트리머")
+    check = False
+    if streamer != None:
         check = True
     return check
 
@@ -71,6 +79,30 @@ async def 도움말(ctx,detail=None):
     await ctx.author.send(embed=embed)
 
 @bot.command()
+async def 멤버인증(ctx,member:discord.Member,*,summoner):
+    await ctx.message.delete()
+    if check_admin:
+        log.logger.info(f"C: 멤버인증 S: 시작 W: {ctx.author.name}")
+        discord_id = member.id
+        try:
+            summoner_id = lol.get_summoner_id(summoner)
+            db.set_member(discord_id,summoner_id)
+            role = get(ctx.guild.roles,name="파티원")
+        except Exception as ex:
+            log.logger.error(f"C: 멤버인증 S: 실패 R: {ex}")
+            return await ctx.send(f"멤버인증을 실패하였습니다.")
+        else:
+            await member.add_roles(role)
+            await ctx.send(f"{member.mention}님 인증되었습니다.")
+            log.logger.info(f"C: 멤버인증 S: 완료 W: {ctx.author.name} T: {member.name}")
+    else:
+        pass
+
+
+
+
+
+@bot.command()
 async def 스트리머(ctx):
     await ctx.message.delete()
     steamers = db.get_streamer()
@@ -85,7 +117,7 @@ async def 스트리머(ctx):
 @bot.command()
 async def 스트리머등록(ctx,streamer: discord.Member,url):
     await ctx.message.delete()
-    if check_admin(ctx)==True:
+    if check_admin(ctx):
         log.logger.info(f"C: 스트리머등록 S: 시작 W: {ctx.author.name}")
         id = streamer.id
         name = streamer.name
@@ -102,14 +134,94 @@ async def 스트리머등록(ctx,streamer: discord.Member,url):
             return await ctx.send(f"{streamer.mention}님 스트리머 등록 실패했습니다.")
         else:
             await streamer.add_roles(role)
-            log.logger.info(f"C: 스트리머등록 S: 완료 W: {ctx.author.name} T: {streamer.name}")
             await ctx.send(f"{streamer.mention}님을 스트리머로 등록 했습니다.")
+            log.logger.info(f"C: 스트리머등록 S: 완료 W: {ctx.author.name} T: {streamer.name}")
     else:
         pass
 
 @bot.command()
-async def 스트리머인사말(ctx):
+async def 스트리머인사말(ctx,*,dec):
     await ctx.message.delete()
+    if check_streamer(ctx):
+        log.logger.info(f"C: 스트리머인사말 S: 시작 W: {ctx.author.name}")
+        author = ctx.message.author
+        discord_id = author.id
+        try:
+            db.up_streamer(discord_id,dec)
+        except Exception as ex:
+            log.logger.error(f"C: 스트리머인사말 S: 실패 R: {ex}")
+            return await ctx.send(f"{author}님의 인사말을 설정하지 못했습니다.")
+        else:
+            await ctx.send(f"{author}님의 인사말을 설정했습니다.")
+            log.logger.info(f"C: 스트리머인사말 S: 완료 W: {ctx.author.name}")
+    else:
+        pass
+
+@bot.command()
+async def 스트리머해제(ctx,streamer: discord.Member):
+    await ctx.message.delete()
+    if check_admin(ctx):
+        log.logger.info(f"C: 스트리머해제 S: 시작 W: {ctx.author.name}")
+        discord_id = streamer.id
+        try:
+            db.del_streamer(discord_id)
+            role = get(ctx.guild.roles, name="스트리머")
+        except Exception as ex:
+            log.logger.error(f"C: 스트리머해제 S: 실패 R: {ex}")
+            return await ctx.send(f"스트리머해제를 실패하였습니다.")
+        else:
+            await streamer.remove_roles(role)
+            await ctx.send(f"{streamer.mention}님이 스트리머해제 되었습니다.")
+            log.logger.info(f"C: 스트리머해제 S: 완료 W: {ctx.author.name} T: {streamer}")
+    else:
+        pass
+
+@bot.command()
+async def 파티등록(ctx,party_name:discord.Role,leader:discord.Member):
+    await ctx.message.delete()
+    if check_admin(ctx):
+        log.logger.info(f"C: 파티등록 S: 시작 W: {ctx.author.name}")
+        name = party_name.name
+        leader_id = leader.id
+        leader_name = leader.name
+        dec = f"안녕하세요. {party_name}입니다!"
+        print(name,leader_id,leader_name,dec)
+        try:
+            db.set_party(name,dec,leader_id,leader_name)
+            role = get(ctx.guild.roles, name="파티장")
+        except Exception as ex:
+            log.logger.error(f"C: 파티등록 S: 실패 R: {ex}")
+            return await ctx.send("파티등록에 실패했습니다.")
+            
+        else:
+            await leader.add_roles(role)
+            await leader.add_roles(party_name)
+            await leader.send(f"**{leader_name}**님께서 신청해주신 파티가 승인 되었습니다.\n파티장 역할이 부여 되었으며, 파티 역할 및 채널이 생성 되었습니다. 자세한 운영은 관리자에게 문의해주시거나 **LOLJA** 명령어를 확인해주세요.")
+            log.logger.info(f"C: 파티등록 S: 완료 W: {ctx.author.name} T: {leader}")
+    else:
+        pass
+
+@bot.command()
+async def 파티가입(ctx,member:discord.Member):
+    await ctx.message.delete()
+    if check_leader(ctx):
+        log.logger.info(f"C: 파티가입 S: 시작 W: {ctx.author.name}")
+        try:
+            party_name = db.get_party(ctx.author.id)
+            role = get(ctx.guild.roles,name=party_name)
+        except Exception as ex:
+            log.logger.error(f"C: 파티가입 S: 실패 R: {ex}")
+            return await ctx.send("파티가입에 실패했습니다.")
+            
+        else:
+            await member.add_roles(party_name)
+            await ctx.send(f"{member.mention}님이 **{party_name}**에 가입되셨습니다.")
+            log.logger.info(f"C: 파티가입 S: 완료 W: {ctx.author.name} T: {member}")
+
+@bot.command()
+async def 파티탈퇴(ctx):
+    await ctx.message.delete()
+
 
 @bot.command()
 async def 주사위(ctx):
