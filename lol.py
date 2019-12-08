@@ -24,6 +24,15 @@ def get_summoner_id(summoner_name):
         summoner = res.json()
         return summoner['id']
 
+def get_auth_value(summoner_id):
+    api_key = fc.GET_KEY("lol.txt")
+    URL = f"{default_URL}/lol/platform/v4/third-party-code/by-summoner/{summoner_id}"
+    Header = Headers(api_key[0])
+    res = requests.get(url=URL,headers=Header)
+    if int (res.status_code) == 200:
+        summoner = res.json()
+        return summoner
+
 
 def get_summoner_tear(member_lol):
     api_key = fc.GET_KEY("lolapi.txt")
