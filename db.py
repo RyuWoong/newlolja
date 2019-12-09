@@ -180,7 +180,7 @@ def get_member(discord_id):
         cursor = conn.cursor()
         sql = f"SELECT * FROM member WHERE discord_id = '{discord_id}'"
         cursor.execute(sql)
-        rows = cursor.fetchall
+        rows = cursor.fetchone()
         conn.commit()
     except:
         call_error()

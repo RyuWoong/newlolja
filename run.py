@@ -4,8 +4,8 @@ from discord.utils import get
 
 ## Set Bot
 token = myfunction.GET_KEY("token.txt")
-game = discord.Game("봇 업데이트 중입니다.")
-bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
+game = discord.Game("!!도움말 ver.OpenBeta")
+bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -44,9 +44,9 @@ async def on_ready():
     print("       봇 Start!\n")
 
 ## Discord error ##
-# @bot.listen('on_command_error')
-# async def on_command_error(ctx,ex):
-#     log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
+@bot.listen('on_command_error')
+async def on_command_error(ctx,ex):
+    log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
     
 
 ## Discord Command ##
@@ -64,12 +64,13 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!파티추방 '@유저'", value="파티장 -> 해당 유저를 팀에서 추방합니다.", inline=False)
         embed.add_field(name="!!파티소개 '@팀명' '소개글'", value="파티장 -> 파티정보에 보여질 소개글을 작성합니다. (100자 이내)", inline=False)
     elif (detail == "관리자"):
-        embed.add_field(name="!!파티원등록 '@유저' '소환사명'", value="파티원으로 해당 유저를 등록합니다.", inline=False)
         embed.add_field(name="!!파티생성 '@팀명' '@유저'", value="파티를 생성하며, 파티장을 선정합니다.\n사전에 해당 팀의 역할 추가 및 역할멘션허용을 해주세요.", inline=False)
         embed.add_field(name="!!경기등록 '@팀명' '@팀명' '설명'", value="경기일정을 추가합니다. 설정된 경기는 리그일정으로 볼 수 있습니다.", inline=False)
         embed.add_field(name="!!경기결과 '매치업번호' '@팀명'", value="경기 결과 등록 및 승점 반영. 승자를 입력해주시고,무승부라면 @팀명에 무승부를 입력.", inline=False)
     else:
         embed.add_field(name="!!공지", value="해당 서버에 등록된 공지를 표시합니다.", inline=False)
+        embed.add_field(name="!!인증시작 '소환사명'", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.1", inline=False)
+        embed.add_field(name="!!인증완료", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.2", inline=False)
         embed.add_field(name="!!주사위", value="1~100까지의 값 중 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!뽑기 '최대 값(숫자)'", value="1~최대 값까지 숫자 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!스트리머", value="해당 서버에 소속된 스트리머를 표시합니다.", inline=False)
@@ -79,7 +80,7 @@ async def 도움말(ctx,detail=None):
     await ctx.author.send(embed=embed)
 
 @bot.command()
-async def 인증(ctx,summoner):
+async def 인증시작(ctx,summoner):
     await ctx.message.delete()
     log.logger.info(f"C: 인증시작 S: 시작 W:{ctx.author.name}")
     member = ctx.message.author
@@ -91,38 +92,38 @@ async def 인증(ctx,summoner):
         role = get(ctx.guild.roles, name="대기")
     except IndexError as ex:
         log.logger.error(f"C: 인증시작 S:실패 R: {ex}")
-        return await member.send (f"인증이 실패하였습니다. \n**소환사 명**을 확인해주세요. 반복될 시 **관리자**에게 문의해주세요.")
+        return await member.send (f"{member.memtion}님 인증이 실패하였습니다. \n**소환사 명**을 확인해주세요. 반복될 시 **관리자**에게 문의해주세요.")
     else:
         await member.add_roles(role)
-        await member.send(f"LOL PARTY 서버 인증을 시작합니다.\nLOL 클라이언트에서 인증을 해주세요.\n```인증번호 : {discord_id}```\n 이후 채널에서 인증확인 명령어를 입력해주세요.")
-        await member.send("https://i.imgur.com/XQFFBm1.png")
+        await member.send(f"LOL PARTY 서버 인증을 시작합니다.\nLOL 클라이언트에서 인증을 해주세요.\n```cs\n인증번호 : {discord_id}```\n 이후 채널에서 인증확인 명령어를 입력해주세요.\n https://i.imgur.com/XQFFBm1.png")
 
 @bot.command()
-async def 인증확인(ctx):
+async def 인증완료(ctx):
     await ctx.message.delete()
     log.logger.info(f"C: 인증확인 S: 시작 W: {ctx.author.name}")
-    discord_id = ctx.author.member.id
+    discord_id = ctx.message.author.id
+    wait = get(ctx.message.author.roles,name="대기")
     try:
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
-        print(summoner_id)
-        auth = lol.get_auth_value(member_info)
+        auth = lol.get_auth_value(summoner_id)
         role1 = get(ctx.guild.roles,name="인증")
-        role2 = get(ctx.message.author.roles,name="대기")
     except Exception as ex:
         log.logger.error(f"C: 멤버인증 S: 실패 R: {ex}")
-        return await ctx.send(f"멤버인증을 실패하였습니다.")
+        return await ctx.send(f"멤버인증을 실패하였습니다. 에러 X( ")
     else:
-        if discord_id == auth:
-            if role2 != None:
-                await ctx.message.author.remove_roles(role2)
-
-            await ctx.message.author.add_roles(role1)
-            await ctx.message.author.send(f"**{ctx.message.author.name}님** 인증되셨습니다.")
-            log.logger.info(f"C: 멤버인증 S: 완료 W: {ctx.message.author.name}")
+        if str(discord_id) == auth:
+            if wait != None:
+                await ctx.message.author.remove_roles(wait)
+                await ctx.message.author.add_roles(role1)
+                await ctx.message.author.send(f"**{ctx.message.author.name}님** 인증되셨습니다.")
+                log.logger.info(f"C: 멤버인증 S: 완료 W: {ctx.message.author.name}")
+            else:
+                await ctx.message.author.send(f"**{ctx.message.author.name}님** 우선 인증 명령어를 입력해주세요.\n자세한 사항은 도움말을 입력해주세요.")
         else:
-            await ctx.message.author.send(f"**{ctx.message.author.name}님** 인증에 실패하였습니다.")
-            log.logger.info(f"C: 멤버인증결과 S: 실패 W: {ctx.message.author.name}")
+            print()
+            await ctx.message.author.send(f"**{ctx.message.author.name}님** 인증에 실패하였습니다. 인증번호를 정확히 입력해주세요.")
+            log.logger.info(f"C: 멤버인증결과 S: 실패 W: {ctx.message.author.name} ID: {discord_id} KEY : {auth}")
 
 @bot.command()
 async def 스트리머(ctx):
