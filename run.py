@@ -1,4 +1,4 @@
-import asyncio,discord,os,random,threading,log,lol,myfunction,db
+import asyncio,discord,os,random,threading,log,lol,myfunction,db,sys
 from discord.ext import commands
 from discord.utils import get
 
@@ -44,9 +44,10 @@ async def on_ready():
     print("       봇 Start!\n")
 
 ## Discord error ##
-@bot.listen('on_command_error')
-async def on_command_error(ctx,ex):
-    log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
+# @bot.listen('on_command_error')
+# async def on_command_error(ctx,ex):
+#     log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
+    
 
 ## Discord Command ##
 
@@ -78,21 +79,23 @@ async def 도움말(ctx,detail=None):
     await ctx.author.send(embed=embed)
 
 @bot.command()
-async def 인증시작(ctx,summoner):
+async def 인증(ctx,summoner):
     await ctx.message.delete()
     log.logger.info(f"C: 인증시작 S: 시작 W:{ctx.author.name}")
-    discord_id = ctx.message.author.id
-    discord_name = ctx.message.author.name
+    member = ctx.message.author
+    discord_id = member.id
+    discord_name = member.name
     try:
         summoner_id = lol.get_summoner_id(summoner)
         db.set_member(discord_id,discord_name,summoner_id)
         role = get(ctx.guild.roles, name="대기")
-    except Exception as ex:
+    except IndexError as ex:
         log.logger.error(f"C: 인증시작 S:실패 R: {ex}")
-        return await ctx.message.author.send (f"인증이 실패하였습니다. \n**소환사 명**을 확인해주세요. 반복될 시 **관리자**에게 문의해주세요.")
+        return await member.send (f"인증이 실패하였습니다. \n**소환사 명**을 확인해주세요. 반복될 시 **관리자**에게 문의해주세요.")
     else:
-        await ctx.message.author.send(f"LOL PARTY 서버 인증을 시작합니다.\nLOL 클라이언트에서 인증을 해주세요.\n```인증번호 : {discord_id}```\n 이후 채널에서 인증확인 명령어를 입력해주세요.")
-        await ctx.message.author.send("https://i.imgur.com/XQFFBm1.png")
+        await member.add_roles(role)
+        await member.send(f"LOL PARTY 서버 인증을 시작합니다.\nLOL 클라이언트에서 인증을 해주세요.\n```인증번호 : {discord_id}```\n 이후 채널에서 인증확인 명령어를 입력해주세요.")
+        await member.send("https://i.imgur.com/XQFFBm1.png")
 
 @bot.command()
 async def 인증확인(ctx):
@@ -233,7 +236,7 @@ async def 파티가입(ctx,member:discord.Member):
             return await ctx.send("파티가입에 실패했습니다.")
             
         else:
-            await member.add_roles(party_name)
+            await member.add_roles(role)
             await ctx.send(f"{member.mention}님이 **{party_name}**에 가입되셨습니다.")
             log.logger.info(f"C: 파티가입 S: 완료 W: {ctx.author.name} T: {member}")
 
