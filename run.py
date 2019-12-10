@@ -80,7 +80,7 @@ async def 도움말(ctx,detail=None):
     await ctx.author.send(embed=embed)
 
 @bot.command()
-async def 인증시작(ctx,summoner):
+async def 인증시작(ctx,*,summoner):
     await ctx.message.delete()
     log.logger.info(f"C: 인증시작 S: 시작 W:{ctx.author.name}")
     member = ctx.message.author
@@ -88,6 +88,8 @@ async def 인증시작(ctx,summoner):
     discord_name = member.name
     try:
         summoner_id = lol.get_summoner_id(summoner)
+        if summoner_id == None:
+            raise Exception
         db.set_member(discord_id,discord_name,summoner_id)
         role = get(ctx.guild.roles, name="대기")
     except IndexError as ex:
