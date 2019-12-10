@@ -55,7 +55,7 @@ async def on_command_error(ctx,ex):
 async def 도움말(ctx,detail=None):
     await ctx.message.delete()
     log.logger.info(f"call: {ctx.message.author} func: 도움")
-    embed=discord.Embed(title= f"{apptitle} 일반 사용법" if detail==None else f"{apptitle} {detail} 사용법" , description=f"명령어 각 값 띄어쓰기 구분함!, @은 Mention", color=0xf3bb76)
+    embed=discord.Embed(title= f"{apptitle} 일반 사용서" if detail==None else f"{apptitle} {detail} 사용서" , description=f"명령어 각 값 띄어쓰기 구분함!, @은 Mention", color=0xf3bb76)
      #embed.set_thumbnail(URL="https://cdn.discordapp.com/attachments/611717026893004810/625911756018941963/NO_.png")
     if (detail == "파티"):
         embed.add_field(name="!!파티가입 '@팀명'@유저'", value="해당 유저를 해당 파티 소속으로 추가합니다.", inline=False)
@@ -68,7 +68,7 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!경기등록 '@팀명' '@팀명' '설명'", value="경기일정을 추가합니다. 설정된 경기는 리그일정으로 볼 수 있습니다.", inline=False)
         embed.add_field(name="!!경기결과 '매치업번호' '@팀명'", value="경기 결과 등록 및 승점 반영. 승자를 입력해주시고,무승부라면 @팀명에 무승부를 입력.", inline=False)
     else:
-        embed.add_field(name="!!공지", value="해당 서버에 등록된 공지를 표시합니다.", inline=False)
+        #embed.add_field(name="!!공지", value="해당 서버 공지사항을 알려줍니다.", inline=False)
         embed.add_field(name="!!인증시작 '소환사명'", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.1", inline=False)
         embed.add_field(name="!!인증완료", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.2", inline=False)
         embed.add_field(name="!!주사위", value="1~100까지의 값 중 하나를 표시합니다.", inline=False)
@@ -81,7 +81,6 @@ async def 도움말(ctx,detail=None):
 
 @bot.command()
 async def 인증시작(ctx,*,summoner):
-    await ctx.message.delete()
     log.logger.info(f"C: 인증시작 S: 시작 W:{ctx.author.name}")
     member = ctx.message.author
     discord_id = member.id
@@ -101,10 +100,11 @@ async def 인증시작(ctx,*,summoner):
 
 @bot.command()
 async def 인증완료(ctx):
-    await ctx.message.delete()
     log.logger.info(f"C: 인증확인 S: 시작 W: {ctx.author.name}")
     discord_id = ctx.message.author.id
     wait = get(ctx.message.author.roles,name="대기")
+    if wait == None:
+        return await ctx.send(f"**{ctx.message.author.name}님** 인증시작을 먼저 입력해주세요.\n자세한 사항은 도움말을 확인해주세요.")
     try:
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
@@ -115,16 +115,12 @@ async def 인증완료(ctx):
         return await ctx.send(f"멤버인증을 실패하였습니다. 에러 X( ")
     else:
         if str(discord_id) == auth:
-            if wait != None:
-                await ctx.message.author.remove_roles(wait)
-                await ctx.message.author.add_roles(role1)
-                await ctx.message.author.send(f"**{ctx.message.author.name}님** 인증되셨습니다.")
-                log.logger.info(f"C: 멤버인증 S: 완료 W: {ctx.message.author.name}")
-            else:
-                await ctx.message.author.send(f"**{ctx.message.author.name}님** 우선 인증 명령어를 입력해주세요.\n자세한 사항은 도움말을 입력해주세요.")
+            await ctx.message.author.remove_roles(wait)
+            await ctx.message.author.add_roles(role1)
+            await ctx.send(f"**{ctx.message.author.name}님** 인증되었습니다.")
+            log.logger.info(f"C: 멤버인증 S: 완료 W: {ctx.message.author.name}")
         else:
-            print()
-            await ctx.message.author.send(f"**{ctx.message.author.name}님** 인증에 실패하였습니다. 인증번호를 정확히 입력해주세요.")
+            await ctx.send(f"**{ctx.message.author.name}님** 인증에 실패하였습니다. 인증번호를 정확히 입력해주세요.")
             log.logger.info(f"C: 멤버인증결과 S: 실패 W: {ctx.message.author.name} ID: {discord_id} KEY : {auth}")
 
 @bot.command()
