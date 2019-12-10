@@ -91,7 +91,7 @@ async def 인증시작(ctx,*,summoner):
             raise Exception
         db.set_member(discord_id,discord_name,summoner_id)
         role = get(ctx.guild.roles, name="대기")
-    except IndexError as ex:
+    except Exception as ex:
         log.logger.error(f"C: 인증시작 S:실패 R: {ex}")
         return await member.send (f"{member.memtion}님 인증이 실패하였습니다. \n**소환사 명**을 확인해주세요. 반복될 시 **관리자**에게 문의해주세요.")
     else:
