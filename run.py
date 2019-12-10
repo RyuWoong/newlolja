@@ -96,15 +96,18 @@ async def 인증시작(ctx,*,summoner):
         return await member.send (f"{member.memtion}님 인증이 실패하였습니다. \n**소환사 명**을 확인해주세요. 반복될 시 **관리자**에게 문의해주세요.")
     else:
         await member.add_roles(role)
-        await member.send(f"LOL PARTY 서버 인증을 시작합니다.\nLOL 클라이언트에서 인증을 해주세요.\n```cs\n인증번호 : {discord_id}```\n 이후 채널에서 인증확인 명령어를 입력해주세요.\n https://i.imgur.com/XQFFBm1.png")
+        await member.send(f"**LOL PARTY 서버 인증을 시작합니다.**\n```cs\n인증코드 : {discord_id}```\n https://i.imgur.com/XQFFBm1.png")
+        await ctx.send (f"**{discord_name}님** 인증을 시작합니다. 개인메세지를 확인해주세요.")
+        log.logger.info(f"C: 인증시작 S: 완료 W:{ctx.author.name}")
 
 @bot.command()
 async def 인증완료(ctx):
     log.logger.info(f"C: 인증확인 S: 시작 W: {ctx.author.name}")
-    discord_id = ctx.message.author.id
-    wait = get(ctx.message.author.roles,name="대기")
+    member = ctx.message.author
+    discord_id = member.id
+    wait = get(member.roles,name="대기")
     if wait == None:
-        return await ctx.send(f"**{ctx.message.author.name}님** 인증시작을 먼저 입력해주세요.\n자세한 사항은 도움말을 확인해주세요.")
+        return await ctx.send(f"**{member.mention}님** 인증시작을 먼저 입력해주세요.\n자세한 사항은 도움말을 확인해주세요.")
     try:
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
@@ -115,13 +118,13 @@ async def 인증완료(ctx):
         return await ctx.send(f"멤버인증을 실패하였습니다. 에러 X( ")
     else:
         if str(discord_id) == auth:
-            await ctx.message.author.remove_roles(wait)
-            await ctx.message.author.add_roles(role1)
-            await ctx.send(f"**{ctx.message.author.name}님** 인증되었습니다.")
-            log.logger.info(f"C: 멤버인증 S: 완료 W: {ctx.message.author.name}")
+            await member.remove_roles(wait)
+            await member.add_roles(role1)
+            await ctx.send(f"**{member.mention}님** 인증되었습니다.")
+            log.logger.info(f"C: 멤버인증 S: 완료 W: {member.name}")
         else:
-            await ctx.send(f"**{ctx.message.author.name}님** 인증에 실패하였습니다. 인증번호를 정확히 입력해주세요.")
-            log.logger.info(f"C: 멤버인증결과 S: 실패 W: {ctx.message.author.name} ID: {discord_id} KEY : {auth}")
+            await ctx.send(f"**{member.mention}님** 인증에 실패하였습니다.")
+            log.logger.info(f"C: 멤버인증결과 S: 실패 W: {member.name} ID: {discord_id} KEY : {auth}")
 
 @bot.command()
 async def 스트리머(ctx):

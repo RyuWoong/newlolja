@@ -166,7 +166,6 @@ def set_member(discord_id,discord_name,summoner_id):
         sql = f"INSERT INTO member (discord_id,discord_name,summoner_id) VALUES('{discord_id}','{discord_name}','{summoner_id}') ON DUPLICATE KEY UPDATE summoner_id = '{summoner_id}', discord_name = '{discord_name}'"
         cursor.execute(sql)
         conn.commit()
-        print("db완료")
     except:
         call_error()
     finally:
