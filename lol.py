@@ -23,6 +23,8 @@ def get_summoner_id(summoner_name):
     if int(res.status_code) == 200:
         summoner = res.json()
         return summoner['id']
+    else:
+        return None
 
 def get_auth_value(summoner_id):
     api_key = fc.GET_KEY("lol.txt")
@@ -34,31 +36,22 @@ def get_auth_value(summoner_id):
         return summoner
 
 
-def get_summoner_tear(member_lol):
-    api_key = fc.GET_KEY("lolapi.txt")
-    URL = f"{default_URL}/lol/summoner/v4/summoners/by-name/{member_lol}"
-    Header = Headers(api_key)
-    res = requests.get(url=URL,headers=Header)
-    if int(res.status_code) == 200:
-        summoner = res.json()
-        summoner_id = summoner['id']
-        URL = f"{default_URL}/lol/league/v4/entries/by-summoner/{summoner_id}"
-        summoner_res = requests.get(url=URL,headers=Header)
-        summoner_leagues = summoner_res.json()
-        summoner_league = None
-        for league in summoner_leagues:
-            if league['queueType'] == "RANKED_SOLO_5x5":
-                summoner_league = league
-            else:
-                pass
-        if summoner_league == None:
-            return None, None
-        elif summoner_league['queueType'] == 'RANKED_SOLO_5x5':
-            solo_tier = summoner_league['tier']
-            solo_rank = summoner_league['rank']
-            return solo_tier,solo_rank
-        else:
-            return None,None
+def get_summoner_tear(summoner_id):
+    api_key = fc.GET_KEY("lol.txt")
+    URL = f"{default_URL}/lol/league/v4/entries/by-summoner/{summoner_id}"
+    Header = Headers(api_key[0])
+    summoner_res = requests.get(url=URL,headers=Header)
+    summoner_leagues = summoner_res.json()
+    print(summoner_leagues)
+    summoner_league = None
+    for league in summoner_leagues:
+        if league['queueType'] == "RANKED_SOLO_5x5":
+            summoner_league = league
+            break
+        
+    if summoner_league['queueType'] == 'RANKED_SOLO_5x5':
+        solo_tier = summoner_league['tier']
+        solo_rank = summoner_league['rank']
+        return solo_tier,solo_rank
     else:
-        log.logger.error(f"@@LOL API ERROR | No Summoner target : {member_lol}")
         return None,None
