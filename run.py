@@ -132,6 +132,7 @@ async def 인증완료(ctx):
         if str(discord_id) == auth:
             await member.remove_roles(wait)
             await member.add_roles(auth_role)
+            db.renew(discord_id)
             await ctx.send(f"{member.mention} 인증되었습니다.```파티를 생성하거나 가입해보세요!\n파티생성은 이용방법 채널에서 확인 할 수 있습니다.\n파티가입은 파티모집 채널에서 구할 수 있습니다.```")
             log.logger.info(f"C: 멤버인증 S: 완료 W: {member.name}")
         else:

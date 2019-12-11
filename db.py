@@ -1,4 +1,4 @@
-import pymysql,log,linecache,sys,getpass
+import pymysql,log,linecache,sys,getpass,datetime
 import myfunction as fc
 
 def open(db_id,db_pw):
@@ -28,7 +28,7 @@ def check_connect():
     return False
 
 def call_error():
-    exc_obj, tb = sys.exc_info()
+    exc_class,exc_obj, tb = sys.exc_info()
     f = tb.tb_frame
     lineno = tb.tb_lineno
     filename = f.f_code.co_filename
@@ -150,7 +150,7 @@ def del_partymember(discord_id):
     try:
         conn = open(db_id,db_pw)
         cursor = conn.cursor()
-        sql = f"UPDATE member SET party is NULL WHERE discord_id='{discord_id}'"
+        sql = f"UPDATE member SET party_name is NULL WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
     except:
@@ -187,6 +187,21 @@ def get_member(discord_id):
         cursor.close()
         conn.close()
         return rows if len(rows) > 0 else None
+
+def renew(discord_id):
+    today = datetime.datetime.now()
+    now = today.strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"UPDATE member SET renew='{now}' WHERE discord_id='{discord_id}'"
+        cursor.execute(sql)
+        conn.commit()
+    except:
+        call_error()
+    finally:
+        cursor.close()
+        conn.close()
 
 
 check=False
