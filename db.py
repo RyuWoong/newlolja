@@ -188,13 +188,16 @@ def get_member(discord_id):
         conn.close()
         return rows if len(rows) > 0 else None
 
-def renew(discord_id,tear):
+def renew(discord_id,tier):
     today = datetime.datetime.now()
     now = today.strftime('%Y-%m-%d %H:%M:%S')
     try:
         conn = open(db_id,db_pw)
         cursor = conn.cursor()
-        sql = f"UPDATE member SET renew='{now}',summoner_tier='{tear}' WHERE discord_id='{discord_id}'"
+        if tier == None:
+            sql = f"UPDATE member SET renew='{now}',summoner_tier is NULL WHERE discord_id='{discord_id}'"
+        else:
+            sql = f"UPDATE member SET renew='{now}',summoner_tier='{tier}' WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
     except:

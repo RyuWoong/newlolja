@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -166,6 +166,7 @@ async def 도움말(ctx,detail=None):
     elif (detail == "인증"):
         embed.add_field(name="!!인증시작 '소환사명'", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.1", inline=False)
         embed.add_field(name="!!인증완료", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.2", inline=False)
+        embed.add_field(name="!!티어갱신", value="소환사 티어 역할을 갱신합니다.", inline=False)
     elif (detail == "일반"):
         embed.add_field(name="!!주사위", value="1~100까지의 값 중 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!뽑기 '최대 값(숫자)'", value="1~최대 값까지 숫자 하나를 표시합니다.", inline=False)
@@ -225,9 +226,6 @@ async def 인증완료(ctx):
         lasttier = member_info[6]
         auth = lol.get_auth_value(summoner_id) #소환사id로 인증 값 불러오기
         solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
-        if solo_tier == None:
-            solo_tier = "UNRANKED"
-            solo_rank = ""
         tier = f"{solo_tier} {solo_rank}"
          #인증 역할 가져오기
     except Exception as ex:
@@ -235,15 +233,17 @@ async def 인증완료(ctx):
         return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패하였습니다. X( ")
     else:
         if str(discord_id) == auth:
-            lasttier = lasttier.split()
             await member.remove_roles(wait)
-            tier_role = get(ctx.guild.roles,name=f"{lasttier[0]}")
-            await member.remove_roles(tier_role)
             auth_role = get(ctx.guild.roles,name="인증")
             await member.add_roles(auth_role)
-            tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
-            await member.add_roles(tier_role)
-            db.renew(discord_id,tier)
+            if solo_tier == None:
+                tier_role = get(ctx.guild.roles,name=f"UNRANKED")
+                db.renew(discord_id,None)
+                await member.add_roles(tier_role)
+            else:
+                tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
+                db.renew(discord_id,tier)
+                await member.add_roles(tier_role)
             await ctx.send(f"{member.mention}\n:white_check_mark: 소환사 인증 확인 되었습니다.")
             log.logger.info(f"C: 인증확인 S: 완료 W: {member.name}")
         else:
@@ -260,15 +260,10 @@ async def 티어갱신(ctx):
         try:
             member_info = db.get_member(discord_id)
             summoner_id = member_info[5]
-            lasttier = member_info[6]
+            lasttier = "UNRANKED" if member_info[6] == None else member_info[6]
             solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
-            if lasttier  == None:
-                lasttier = "UNRANKED"
-            if solo_tier == None:
-                solo_tier = "UNRANKED"
-                solo_rank = ""
             tier = f"{solo_tier} {solo_rank}"
-            db.renew(discord_id,tier)
+            
         except Exception as ex:
             log.logger.error(f"C: 티어갱신 S: 실패 R: {ex}")
             return await ctx.send(f"{member.mention}\n:red_square: 갱신을 실패하였습니다. X( ")
@@ -276,9 +271,22 @@ async def 티어갱신(ctx):
             lasttier = lasttier.split()
             tier_role = get(ctx.guild.roles,name=f"{lasttier[0]}")
             await member.remove_roles(tier_role)
-            tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
-            await member.add_roles(tier_role)
-            await ctx.send(f"{member.mention}\n{member_info[6]} :point_right: {tier}")
+            if solo_tier == None:
+                solo_tier = "UNRANKED"
+                tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
+                db.renew(discord_id,None)
+                await member.add_roles(tier_role)
+                await ctx.send(f"{member.mention}\n{member_info[6]} :point_right: {tier}")
+            if member_info[6] ==None:
+                tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
+                await member.add_roles(tier_role)
+                db.renew(discord_id,tier)
+                await ctx.send(f"{member.mention}\nUNRANKED :point_right: {tier}")
+            else:
+                tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
+                await member.add_roles(tier_role)
+                db.renew(discord_id,tier)
+                await ctx.send(f"{member.mention}\n{member_info[6]} :point_right: {tier}")
             log.logger.info(f"C: 티어갱신 S: 완료 W: {member.name}")
             
 
@@ -456,4 +464,4 @@ async def 소환사(ctx,*,lolname):
         else:
             await ctx.send(f"**{lolname}**의 티어는 **{solo_tier} {solo_rank}** 입니다.")
 
-bot.run(token[0])
+bot.run(token[1])

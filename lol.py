@@ -42,7 +42,6 @@ def get_summoner_tier(summoner_id):
     Header = Headers(api_key[0])
     summoner_res = requests.get(url=URL,headers=Header)
     summoner_leagues = summoner_res.json()
-    print(summoner_leagues)
     summoner_league = None
     for league in summoner_leagues:
         if league['queueType'] == "RANKED_SOLO_5x5":
