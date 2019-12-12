@@ -50,10 +50,10 @@ def check_auth(ctx):
 ## Start Bot ##
 @bot.event
 async def on_ready():
-    os.system('cls')
+    #os.system('cls')
     os.system('clear')
     bot.myGuild = bot.get_guild(316770615644389376)
-    myVoiceChannels = bot.myGuild.voice_channels
+    #myVoiceChannels = bot.myGuild.voice_channels
     print("       @ Discord Bot LOLJA")
     print("       @ MADE BY. 깜뭉이")
     print("       @ Copyright 깜뭉이. 2019")
