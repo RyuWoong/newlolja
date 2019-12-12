@@ -5,11 +5,11 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
-footer = f"{apptitle} ver.Beta | ⓒ 2019 깜뭉이"
+footer = f"{apptitle} ver.OpenBeta | ⓒ 2019 깜뭉이"
 bot.STATUS_START = False
 bot.myGuild = None
 myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276, 654493812860780544]
@@ -62,9 +62,9 @@ async def on_ready():
     bot.STATUS_START = True
 
 ## Discord error ##
-@bot.listen('on_command_error')
-async def on_command_error(ctx,ex):
-    log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
+# @bot.listen('on_command_error')
+# async def on_command_error(ctx,ex):
+#     log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
 
 ## Discord Event##
 @bot.event
@@ -141,6 +141,12 @@ async def on_voice_state_update(member,before,after):
 
 ## Discord Command ##
 @bot.command()
+async def 테스트(ctx):
+    srt = "1","2"
+    print(srt)
+
+
+@bot.command()
 async def 도움말(ctx,detail=None):
     await ctx.message.delete()
     url=bot.myGuild.icon_url
@@ -175,14 +181,15 @@ async def 도움말(ctx,detail=None):
     await ctx.author.send(embed=embed)
 
 @bot.command()
-async def 인증시작(ctx,*,summoner):
+async def 인증시작(ctx,*,summoner=None):
+    await ctx.message.delete()
     log.logger.info(f"C: 인증시작 S: 시작 W:{ctx.author.name}") #시작
     member = ctx.message.author #info 
     discord_id = member.id
     discord_name = member.name
     if check_auth(ctx): #소환사 계정 변경 방지. 이미 인증되어 있다면 못하게 제한합니다.
         log.logger.info(f"C: 인증시작 S:실패 R: 이미 인증된 유저")
-        return await ctx.send(f"{member.mention}님은 이미 인증이 되어있습니다.\n 만약 연동된 소환사 변경을 원하신다면 **깜뭉이**에게 문의해주세요.")
+        return await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
     try:
         summoner_id = lol.get_summoner_id(summoner) # 소환사 명을 통해 소환사ID 키 값을 가져옵니다.
         if summoner_id == None: # 잘못된 소환사 명을 입력 했을 경우 인증 실패로 반환합니다.
@@ -191,39 +198,89 @@ async def 인증시작(ctx,*,summoner):
         role = get(ctx.guild.roles, name="대기") #대기 역할 가져오기
     except Exception as ex:
         log.logger.error(f"C: 인증시작 S:실패 R: {ex}")
-        return await member.send (f"{member.mention}님 인증이 실패하였습니다. \n**소환사 명**을 확인해주세요. 반복될 시 **관리자**에게 문의해주세요.")
+        return await member.send (f"{member.mention}\n:x: 인증이 실패하였습니다.\nballot_box_with_check: **소환사 명**을 정확히 입력해주세요.")
     else:
         await member.add_roles(role) # 대기 라는 역할을 부여하여 유저에게 인증 시작 단계임을 표시합니다.
-        await member.send(f"**LOL PARTY 서버 인증을 시작합니다.**\n 본인 명의 계정으로 인증해주세요. 본인 명의 계정이 아닐 시 향후 이벤트 참가에서 불이익이 생길 수도 있습니다. ```cs\n인증코드 : {discord_id}```\n https://i.imgur.com/XQFFBm1.png")
-        await ctx.send (f"**{discord_name}님** 인증을 시작합니다. 개인메세지를 확인해주세요.")
+        embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증", description=f"대표하는 소환사 계정을 인증합니다.", color=0xf3bb76)
+        embed.set_thumbnail(url=bot.myGuild.icon_url)
+        embed.add_field(name=":pencil2: 인증번호", value=f"{discord_id}", inline=False)
+        embed.set_image(url="https://i.imgur.com/XQFFBm1.png")
+        embed.set_footer(text=footer)
+        await member.send(embed=embed)
+        await ctx.send (f"{member.mention}\n:green_square: 인증을 시작합니다. 개인메세지를 확인해주세요.")
         log.logger.info(f"C: 인증시작 S: 완료 W:{ctx.author.name}")
 
 @bot.command()
 async def 인증완료(ctx):
+    await ctx.message.delete()
     log.logger.info(f"C: 인증확인 S: 시작 W: {ctx.author.name}") #시작
     member = ctx.message.author #info
     discord_id = member.id
     wait = get(member.roles,name="대기")
     if wait == None: # 인증 시작 하였는지 확인
-        return await ctx.send(f"**{member.mention}님** 인증시작을 먼저 입력해주세요.\n자세한 사항은 도움말을 확인해주세요.")
+        return await ctx.send(f"{member.mention}\n:exclamation: !!인증시작부터 먼저 입력해주세요.\n:question: 자세한 사항은 `!!도움말 인증`을 확인해주세요.")
     try:
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
+        lasttier = member_info[6]
         auth = lol.get_auth_value(summoner_id) #소환사id로 인증 값 불러오기
-        auth_role = get(ctx.guild.roles,name="인증") #인증 역할 가져오기
+        solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
+        if solo_tier == None:
+            solo_tier = "UNRANKED"
+            solo_rank = ""
+        tier = f"{solo_tier} {solo_rank}"
+         #인증 역할 가져오기
     except Exception as ex:
-        log.logger.error(f"C: 멤버인증 S: 실패 R: {ex}")
-        return await ctx.send(f"멤버인증을 실패하였습니다. 에러 X( ")
+        log.logger.error(f"C: 인증확인 S: 실패 R: {ex}")
+        return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패하였습니다. X( ")
     else:
         if str(discord_id) == auth:
+            lasttier = lasttier.split()
             await member.remove_roles(wait)
+            tier_role = get(ctx.guild.roles,name=f"{lasttier[0]}")
+            await member.remove_roles(tier_role)
+            auth_role = get(ctx.guild.roles,name="인증")
             await member.add_roles(auth_role)
-            db.renew(discord_id)
-            await ctx.send(f"{member.mention} 인증되었습니다.```파티를 생성하거나 가입해보세요!\n파티생성은 이용방법 채널에서 확인 할 수 있습니다.\n파티가입은 파티모집 채널에서 구할 수 있습니다.```")
-            log.logger.info(f"C: 멤버인증 S: 완료 W: {member.name}")
+            tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
+            await member.add_roles(tier_role)
+            db.renew(discord_id,tier)
+            await ctx.send(f"{member.mention}\n:white_check_mark: 소환사 인증 확인 되었습니다.")
+            log.logger.info(f"C: 인증확인 S: 완료 W: {member.name}")
         else:
-            await ctx.send(f"**{member.mention}님** 인증에 실패하였습니다.")
-            log.logger.info(f"C: 멤버인증결과 S: 실패 W: {member.name} ID: {discord_id} KEY : {auth}")
+            await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패하였습니다. X(")
+            log.logger.info(f"C: 인증확인결과 S: 실패 W: {member.name} ID: {discord_id} KEY : {auth}")
+
+@bot.command()
+async def 티어갱신(ctx):
+    await ctx.message.delete() 
+    if check_auth(ctx):
+        log.logger.info(f"C: 티어갱신 S: 시작 W: {ctx.author.name}")
+        member = ctx.message.author
+        discord_id = member.id
+        try:
+            member_info = db.get_member(discord_id)
+            summoner_id = member_info[5]
+            lasttier = member_info[6]
+            solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
+            if lasttier  == None:
+                lasttier = "UNRANKED"
+            if solo_tier == None:
+                solo_tier = "UNRANKED"
+                solo_rank = ""
+            tier = f"{solo_tier} {solo_rank}"
+            db.renew(discord_id,tier)
+        except Exception as ex:
+            log.logger.error(f"C: 티어갱신 S: 실패 R: {ex}")
+            return await ctx.send(f"{member.mention}\n:red_square: 갱신을 실패하였습니다. X( ")
+        else:
+            lasttier = lasttier.split()
+            tier_role = get(ctx.guild.roles,name=f"{lasttier[0]}")
+            await member.remove_roles(tier_role)
+            tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
+            await member.add_roles(tier_role)
+            await ctx.send(f"{member.mention}\n{member_info[6]} :point_right: {tier}")
+            log.logger.info(f"C: 티어갱신 S: 완료 W: {member.name}")
+            
 
 @bot.command()
 async def 스트리머(ctx):
@@ -392,11 +449,11 @@ async def 소환사(ctx,*,lolname):
     if summoner_id == None:
         await ctx.send(f"**{lolname}**은 찾을 수 없는 소환사 입니다.")
     else:
-        solo_tier,solo_rank = lol.get_summoner_tear(summoner_id)
+        solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
         log.logger.info(f"call: {ctx.message.author} func: 소환사정보")
         if solo_rank == None:
             await ctx.send(f"**{lolname}**의 랭크 정보가 없습니다.")
         else:
             await ctx.send(f"**{lolname}**의 티어는 **{solo_tier} {solo_rank}** 입니다.")
 
-bot.run(token[0])
+bot.run(token[1])

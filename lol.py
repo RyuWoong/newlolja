@@ -36,7 +36,7 @@ def get_auth_value(summoner_id):
         return summoner
 
 
-def get_summoner_tear(summoner_id):
+def get_summoner_tier(summoner_id):
     api_key = fc.GET_KEY("lol.txt")
     URL = f"{default_URL}/lol/league/v4/entries/by-summoner/{summoner_id}"
     Header = Headers(api_key[0])

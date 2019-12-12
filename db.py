@@ -188,13 +188,13 @@ def get_member(discord_id):
         conn.close()
         return rows if len(rows) > 0 else None
 
-def renew(discord_id):
+def renew(discord_id,tear):
     today = datetime.datetime.now()
     now = today.strftime('%Y-%m-%d %H:%M:%S')
     try:
         conn = open(db_id,db_pw)
         cursor = conn.cursor()
-        sql = f"UPDATE member SET renew='{now}' WHERE discord_id='{discord_id}'"
+        sql = f"UPDATE member SET renew='{now}',summoner_tier='{tear}' WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
     except:
@@ -206,6 +206,6 @@ def renew(discord_id):
 
 check=False
 while check==False:
-    db_id = input("Enter DB ID : ")
-    db_pw = input("Enter DB PW : ")
+    db_id = "lolparty"
+    db_pw = "rhqor01"
     check = check_connect()
