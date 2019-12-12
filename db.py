@@ -206,8 +206,6 @@ def renew(discord_id):
 
 check=False
 while check==False:
-    #db_id = input("Enter DB ID : ")
-    #db_pw = input("Enter DB PW : ")
-    db_id = "lolparty"
-    db_pw = "rhqor01"
+    db_id = input("Enter DB ID : ")
+    db_pw = input("Enter DB PW : ")
     check = check_connect()

@@ -399,4 +399,4 @@ async def 소환사(ctx,*,lolname):
         else:
             await ctx.send(f"**{lolname}**의 티어는 **{solo_tier} {solo_rank}** 입니다.")
 
-bot.run(token[1])
+bot.run(token[0])
