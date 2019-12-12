@@ -2,10 +2,10 @@ import asyncio,discord,os,random,threading,log,lol,myfunction,db,sys
 from discord.ext import commands
 from discord.utils import get
 
-## Set Bot
+## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
