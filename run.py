@@ -5,11 +5,17 @@ from discord.utils import get
 ## Set Bot
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
 footer = f"{apptitle} ver.Beta | ⓒ 2019 깜뭉이"
+bot.STATUS_START = False
+bot.myGuild = None
+myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276, 654493812860780544]
+normal_Channel = 654337874207965184
+chess_Channel = 654337910979559426
+rank_Channel = 654507949774995459
 
 ## Default Function ##
 def check_admin(ctx):
@@ -44,28 +50,104 @@ def check_auth(ctx):
 ## Start Bot ##
 @bot.event
 async def on_ready():
-    clear = lambda : os.system('cls')
-    clear()
-    print("       @ Discord Bot LOLJA ")
-    print("       @ MADE BY. 깜뭉이 ")
-    print("       @ Copyright 깜뭉이. 2019 \n\n")
-    print("       봇 Start!\n")
+    os.system('cls')
+    os.system('clear')
+    bot.myGuild = bot.get_guild(316770615644389376)
+    myVoiceChannels = bot.myGuild.voice_channels
+    print("       @ Discord Bot LOLJA")
+    print("       @ MADE BY. 깜뭉이")
+    print("       @ Copyright 깜뭉이. 2019")
+    print("       @ Start!")
+    print("       GUILD -")
+    bot.STATUS_START = True
 
 ## Discord error ##
 @bot.listen('on_command_error')
 async def on_command_error(ctx,ex):
     log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
-    
+
+## Discord Event##
+@bot.event
+async def on_voice_state_update(member,before,after):
+    left_channel = before.channel
+    now_channel = after.channel
+    print(left_channel,now_channel)
+    if bot.STATUS_START:
+        if left_channel != None:
+            if left_channel.id in myVoiceChannels:
+                log.logger.info(f"C : {member} F : Left VoiceChannel")
+                pass
+            else:
+                print(len(left_channel.members))
+                if len(left_channel.members) < 1:
+                    log.logger.info(f"C : {member} F : Left VoiceChannel and Delete Channel")
+                    await left_channel.delete()
+        if now_channel != None:
+            log.logger.info(f"C : {member} F : In VoiceChannel")
+            print(now_channel.id,type(now_channel.id))
+            print(now_channel.id == 654500798281023493)
+            if now_channel.id in myVoiceChannels:
+                if now_channel.id == 654500798281023493 :
+                    log.logger.info(f"C : {member} F : StartGame Normal Game")
+                    category = now_channel.category
+                    overwrite = {
+                        member : discord.PermissionOverwrite(manage_channels=True)
+                    }
+                    new_channel = await category.create_voice_channel(name="일반게임 - 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    invite = await new_channel.create_invite(max_age=360)
+                    channel = bot.myGuild.get_channel(normal_Channel)
+                    await member.move_to(new_channel)
+                    await channel.send(f"{member.mention}\n{invite.url} ```일반 게임방이 생성 되었습니다.\n초대코드를 사용하여 유저를 모아보세요!```")
+
+                elif now_channel.id == 654493633608810527 :
+                    log.logger.info(f"C : {member} F : StartGame LOLChess")
+                    category = now_channel.category
+                    overwrite = {
+                        member : discord.PermissionOverwrite(manage_channels=True)
+                    }
+                    new_channel = await category.create_voice_channel(name="롤토체스 - 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
+                    invite = await new_channel.create_invite(max_age=360)
+                    channel = bot.myGuild.get_channel(chess_Channel)
+                    await member.move_to(new_channel)
+                    await channel.send(f"{member.mention}\n{invite.url} ```롤토체스 방이 생성 되었습니다.\n초대코드를 사용하여 유저를 모아보세요!```")
+
+                elif now_channel.id == 654493745554784276 :
+                    log.logger.info(f"C : {member} F : StartGame Duo Rank")
+                    category = now_channel.category
+                    overwrite = {
+                        member : discord.PermissionOverwrite(manage_channels=True)
+                    }
+                    new_channel = await category.create_voice_channel(name="듀오랭크 - 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
+                    invite = await new_channel.create_invite(max_age=360)
+                    channel = bot.myGuild.get_channel(rank_Channel)
+                    await member.move_to(new_channel)
+                    await channel.send(f"{member.mention}\n{invite.url} ```듀오 랭크방이 생성 되었습니다.\n초대코드를 사용하여 유저를 모아보세요!```")
+
+                elif now_channel.id == 654493812860780544  :
+                    log.logger.info(f"C : {member} F : StartGame Free Rank")
+                    category = now_channel.category
+                    overwrite = {
+                        member : discord.PermissionOverwrite(manage_channels=True)
+                    }
+                    new_channel = await category.create_voice_channel(name="자유랭크 - 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    invite = await new_channel.create_invite(max_age=360)
+                    channel = bot.myGuild.get_channel(rank_Channel)
+                    await member.move_to(new_channel)
+                    await channel.send(f"{member.mention}\n{invite.url} ```자유 랭크방이 생성 되었습니다.\n초대코드를 사용하여 유저를 모아보세요!```")
+            else:
+                pass
+
+
 
 ## Discord Command ##
-
 @bot.command()
 async def 도움말(ctx,detail=None):
     await ctx.message.delete()
+    url=bot.myGuild.icon_url
     log.logger.info(f"call: {ctx.message.author} func: 도움")
-    embed=discord.Embed(title= f"{apptitle} 일반 사용서" if detail==None else f"{apptitle} {detail} 사용서" , description=f"명령어 각 값 띄어쓰기 구분함!, @은 Mention", color=0xf3bb76)
-     #embed.set_thumbnail(URL="https://cdn.discordapp.com/attachments/611717026893004810/625911756018941963/NO_.png")
-    if (detail == "파티"):
+    embed=discord.Embed(title= f"{apptitle} 사용서" if detail==None else f"{apptitle} {detail} 사용서" , description=f"명령어 내 값은 띄어쓰기로 구분, @은 호출", color=0xf3bb76)
+    embed.set_thumbnail(url=url)
+    if (detail == "팀"):
         embed.add_field(name="!!파티가입 '@유저'", value="파티장) 해당 유저를 본인 파티 소속으로 추가합니다.", inline=False)
         embed.add_field(name="!!파티탈퇴", value="파티에서 탈퇴합니다. 파티장인 경우 관리자에게 문의해주세요.", inline=False)
         embed.add_field(name="!!파티탈퇴 '@유저'", value="파티장) 파티에서 추방합니다. ", inline=False)
@@ -78,13 +160,17 @@ async def 도움말(ctx,detail=None):
     elif (detail == "인증"):
         embed.add_field(name="!!인증시작 '소환사명'", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.1", inline=False)
         embed.add_field(name="!!인증완료", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.2", inline=False)
-    else:
-        #embed.add_field(name="!!공지", value="해당 서버 공지사항을 알려줍니다.", inline=False)
+    elif (detail == "일반"):
         embed.add_field(name="!!주사위", value="1~100까지의 값 중 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!뽑기 '최대 값(숫자)'", value="1~최대 값까지 숫자 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!스트리머", value="해당 서버에 소속된 스트리머를 표시합니다.", inline=False)
         embed.add_field(name="!!소환사 '소환사명'", value="해당 소환사의 정보를 표시합니다.", inline=False)
         embed.add_field(name="!!도움말 '파티' 또는 '인증'", value="다른 주제의 명령어 도움말을 표시합니다.", inline=False)
+    else:
+        #embed.add_field(name="!!공지", value="해당 서버 공지사항을 알려줍니다.", inline=False)
+        embed.add_field(name="!!도움말 일반", value="일반 및 유틸 명령어을 보여줍니다.", inline=False)
+        embed.add_field(name="!!도움말 팀", value="팀과 관련된 명령어를 보여줍니다.", inline=False)
+        embed.add_field(name="!!도움말 인증", value="인증과 관련된 명령어를 보여줍니다.", inline=False)
     embed.set_footer(text=footer)
     await ctx.author.send(embed=embed)
 
@@ -313,4 +399,4 @@ async def 소환사(ctx,*,lolname):
         else:
             await ctx.send(f"**{lolname}**의 티어는 **{solo_tier} {solo_rank}** 입니다.")
 
-bot.run(token[0])
+bot.run(token[1])
