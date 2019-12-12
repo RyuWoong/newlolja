@@ -47,8 +47,9 @@ def get_summoner_tier(summoner_id):
         if league['queueType'] == "RANKED_SOLO_5x5":
             summoner_league = league
             break
-        
-    if summoner_league['queueType'] == 'RANKED_SOLO_5x5':
+    if summoner_league == None:
+        return None,None
+    elif summoner_league['queueType'] == 'RANKED_SOLO_5x5':
         solo_tier = summoner_league['tier']
         solo_rank = summoner_league['rank']
         return solo_tier,solo_rank

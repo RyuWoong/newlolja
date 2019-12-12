@@ -18,35 +18,33 @@ chess_Channel = 654337910979559426
 rank_Channel = 654507949774995459
 
 ## Default Function ##
-def check_admin(ctx):
-    admin = ctx.message.author.permissions_in(ctx.channel)
-    check = admin.administrator
-    return check
-
-def check_leader(ctx):
-    member = ctx.message.author
-    leader = get(member.roles,name="파티장")
+def check(ctx,type):
     check = False
-    if leader != None:
-        check = True
-    return check
-
-def check_streamer(ctx):
     member = ctx.message.author
-    streamer = get(member.roles,name="스트리머")
-    check = False
-    if streamer != None:
-        check = True
-    return check
-
-def check_auth(ctx):
-    member = ctx.message.author
-    auth = get(member.roles,name="인증")
-    check = False
-    if auth != None:
-        check = True
-    return check
-
+    if type == "admin":
+        admin = ctx.message.author.permissions_in(ctx.channel)
+        check = admin.administrator
+        return check
+    elif type == "leader":
+        leader = get(member.roles,name="파티장")
+        if leader != None:
+            check = True
+            return check
+    elif type == "streamer": 
+        streamer = get(member.roles,name="스트리머")
+        if streamer != None:
+            check = True
+            return check
+    elif type == "wait":
+        wait = get(member.roles,name="대기")
+        if wait != None:
+            check = True
+            return check
+    elif type == "auth":
+        auth = get(member.roles,name="인증")
+        if auth != None:
+            check = True
+            return check
 ## Start Bot ##
 @bot.event
 async def on_ready():
@@ -182,24 +180,25 @@ async def 도움말(ctx,detail=None):
     await ctx.author.send(embed=embed)
 
 @bot.command()
-async def 인증시작(ctx,*,summoner=None):
+async def 인증시작(ctx,*,summoner=""):
     await ctx.message.delete()
     log.logger.info(f"C: 인증시작 S: 시작 W:{ctx.author.name}") #시작
     member = ctx.message.author #info 
     discord_id = member.id
     discord_name = member.name
-    if check_auth(ctx): #소환사 계정 변경 방지. 이미 인증되어 있다면 못하게 제한합니다.
+    if check(ctx,"auth"): #소환사 계정 변경 방지. 이미 인증되어 있다면 못하게 제한합니다.
         log.logger.info(f"C: 인증시작 S:실패 R: 이미 인증된 유저")
         return await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
     try:
-        summoner_id = lol.get_summoner_id(summoner) # 소환사 명을 통해 소환사ID 키 값을 가져옵니다.
+        summoner_id = lol.get_summoner_id(summoner)
+        print(summoner_id) # 소환사 명을 통해 소환사ID 키 값을 가져옵니다.
         if summoner_id == None: # 잘못된 소환사 명을 입력 했을 경우 인증 실패로 반환합니다.
-            raise Exception
+            raise Exception('소환사 명 잘못됨')
         db.set_member(discord_id,discord_name,summoner_id) # DB에 디스코드id , 디스코드 별명, 소환사 아이디를 기록합니다.
         role = get(ctx.guild.roles, name="대기") #대기 역할 가져오기
     except Exception as ex:
         log.logger.error(f"C: 인증시작 S:실패 R: {ex}")
-        return await member.send (f"{member.mention}\n:x: 인증이 실패하였습니다.\nballot_box_with_check: **소환사 명**을 정확히 입력해주세요.")
+        return await ctx.send (f"{member.mention}\n:x: 인증이 실패하였습니다.\nballot_box_with_check: **소환사 명**을 정확히 입력해주세요.")
     else:
         await member.add_roles(role) # 대기 라는 역할을 부여하여 유저에게 인증 시작 단계임을 표시합니다.
         embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증", description=f"대표하는 소환사 계정을 인증합니다.", color=0xf3bb76)
@@ -214,29 +213,35 @@ async def 인증시작(ctx,*,summoner=None):
 @bot.command()
 async def 인증완료(ctx):
     await ctx.message.delete()
-    log.logger.info(f"C: 인증확인 S: 시작 W: {ctx.author.name}") #시작
+    log.logger.info(f"C: 인증완료 S: 시작 W: {ctx.author.name}") #시작
     member = ctx.message.author #info
     discord_id = member.id
-    wait = get(member.roles,name="대기")
-    if wait == None: # 인증 시작 하였는지 확인
+    if check(ctx,"auth"):
+        return await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
+    if not check(ctx,"wait"):
         return await ctx.send(f"{member.mention}\n:exclamation: !!인증시작부터 먼저 입력해주세요.\n:question: 자세한 사항은 `!!도움말 인증`을 확인해주세요.")
+    wait = get(member.roles,name="대기")
     try:
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
-        lasttier = member_info[6]
         auth = lol.get_auth_value(summoner_id) #소환사id로 인증 값 불러오기
-        solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
-        tier = f"{solo_tier} {solo_rank}"
-         #인증 역할 가져오기
+
+        lasttier = member_info[6]
+        solo_tier,solo_rank = lol.get_summoner_tier(summoner_id) # 현재 랭크 티어 가져오기.
+        if solo_tier == None:
+            tier = None      
+        else:
+            tier = f"{solo_tier} {solo_rank}"   #인증 역할 가져오기
     except Exception as ex:
-        log.logger.error(f"C: 인증확인 S: 실패 R: {ex}")
-        return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패하였습니다. X( ")
+        log.logger.error(f"C: 인증완료 S: 실패 R: {ex}")
+        return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패 하였습니다. :sweat: ")
     else:
-        if str(discord_id) == auth:
-            await member.remove_roles(wait)
-            auth_role = get(ctx.guild.roles,name="인증")
-            await member.add_roles(auth_role)
-            if solo_tier == None:
+        if str(discord_id) == auth: #인증 단계
+            await member.remove_roles(wait) #대기 역활 삭제
+            auth_role = get(ctx.guild.roles,name="인증") #인증역할 찾기
+            await member.add_roles(auth_role) #인증역할 부여
+
+            if tier == None:
                 tier_role = get(ctx.guild.roles,name=f"UNRANKED")
                 db.renew(discord_id,None)
                 await member.add_roles(tier_role)
@@ -244,7 +249,7 @@ async def 인증완료(ctx):
                 tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
                 db.renew(discord_id,tier)
                 await member.add_roles(tier_role)
-            await ctx.send(f"{member.mention}\n:white_check_mark: 소환사 인증 확인 되었습니다.")
+            await ctx.send(f"{member.mention}\n:white_check_mark: 소환사 인증이 확인 되었습니다.")
             log.logger.info(f"C: 인증확인 S: 완료 W: {member.name}")
         else:
             await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패하였습니다. X(")
@@ -253,17 +258,23 @@ async def 인증완료(ctx):
 @bot.command()
 async def 티어갱신(ctx):
     await ctx.message.delete() 
-    if check_auth(ctx):
+    if check(ctx,"auth"):
         log.logger.info(f"C: 티어갱신 S: 시작 W: {ctx.author.name}")
         member = ctx.message.author
         discord_id = member.id
         try:
             member_info = db.get_member(discord_id)
             summoner_id = member_info[5]
-            lasttier = "UNRANKED" if member_info[6] == None else member_info[6]
-            solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
-            tier = f"{solo_tier} {solo_rank}"
+            if member_info[6]==None:
+                lasttier = "UNRANKED" 
+            else:
+                lasttier = member_info[6]
             
+            solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
+            if solo_tier == None:
+                tier = "UNRANKED"      
+            else:
+                tier = f"{solo_tier} {solo_rank}"
         except Exception as ex:
             log.logger.error(f"C: 티어갱신 S: 실패 R: {ex}")
             return await ctx.send(f"{member.mention}\n:red_square: 갱신을 실패하였습니다. X( ")
@@ -271,22 +282,17 @@ async def 티어갱신(ctx):
             lasttier = lasttier.split()
             tier_role = get(ctx.guild.roles,name=f"{lasttier[0]}")
             await member.remove_roles(tier_role)
+
             if solo_tier == None:
-                solo_tier = "UNRANKED"
-                tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
+                tier_role = get(ctx.guild.roles,name=f"{tier}")
                 db.renew(discord_id,None)
                 await member.add_roles(tier_role)
-                await ctx.send(f"{member.mention}\n{member_info[6]} :point_right: {tier}")
-            if member_info[6] ==None:
-                tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
-                await member.add_roles(tier_role)
-                db.renew(discord_id,tier)
-                await ctx.send(f"{member.mention}\nUNRANKED :point_right: {tier}")
+                await ctx.send(f"{member.mention}\n{lasttier} :point_right: {tier}")
             else:
                 tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
                 await member.add_roles(tier_role)
                 db.renew(discord_id,tier)
-                await ctx.send(f"{member.mention}\n{member_info[6]} :point_right: {tier}")
+                await ctx.send(f"{member.mention}\n{lasttier} :point_right: {tier}")
             log.logger.info(f"C: 티어갱신 S: 완료 W: {member.name}")
             
 
@@ -305,7 +311,7 @@ async def 스트리머(ctx):
 @bot.command()
 async def 스트리머등록(ctx,streamer: discord.Member,url):
     await ctx.message.delete()
-    if check_admin(ctx):
+    if check(ctx,'admin'):
         log.logger.info(f"C: 스트리머등록 S: 시작 W: {ctx.author.name}")
         id = streamer.id
         name = streamer.name
@@ -330,7 +336,7 @@ async def 스트리머등록(ctx,streamer: discord.Member,url):
 @bot.command()
 async def 스트리머인사말(ctx,*,dec):
     await ctx.message.delete()
-    if check_streamer(ctx):
+    if check(ctx,'streamer'):
         log.logger.info(f"C: 스트리머인사말 S: 시작 W: {ctx.author.name}")
         author = ctx.message.author
         discord_id = author.id
@@ -348,7 +354,7 @@ async def 스트리머인사말(ctx,*,dec):
 @bot.command()
 async def 스트리머해제(ctx,streamer: discord.Member):
     await ctx.message.delete()
-    if check_admin(ctx):
+    if check(ctx,'admin'):
         log.logger.info(f"C: 스트리머해제 S: 시작 W: {ctx.author.name}")
         discord_id = streamer.id
         try:
@@ -367,7 +373,7 @@ async def 스트리머해제(ctx,streamer: discord.Member):
 @bot.command()
 async def 파티등록(ctx,role_name:discord.Role,discord:discord.Member):
     await ctx.message.delete()
-    if check_admin(ctx):
+    if check(ctx,'admin'):
         log.logger.info(f"C: 파티등록 S: 시작 W: {ctx.message.author.name}")
         party_name = role_name.name
         discord_id = discord.id
@@ -394,7 +400,7 @@ async def 파티가입(ctx,member:discord.Member):
     await ctx.message.delete()
     leader = ctx.message.author
     leader_id = leader.id
-    if check_leader(ctx):
+    if check(ctx,'leader'):
         log.logger.info(f"C: 파티가입 S: 시작 W: {leader.name}")
         try:
             party_name = db.get_party(leader_id)
@@ -420,7 +426,7 @@ async def 파티탈퇴(ctx,member:discord.Member=None):
     except Exception as ex:
         log.logger.error(f"C: 파티탈퇴 S: 실패 W: {leader.name} R: {ex}")
     else:
-        if check_leader(ctx):
+        if check(ctx,'leader'):
             if member == None:
                 await ctx.send(f"{leader}는 파티를 탈퇴 할 수 없습니다. 필요하신 사항은 관리자에게 문의해주세요.")
                 log.logger.info(f"C: 파티탈퇴 S: 실패 W: {leader.name} R: 파티장은 탈퇴 불가")

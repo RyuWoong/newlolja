@@ -160,10 +160,12 @@ def del_partymember(discord_id):
         conn.close()
 
 def set_member(discord_id,discord_name,summoner_id):
+    today = datetime.datetime.now()
+    now = today.strftime('%Y-%m-%d %H:%M:%S')
     try:
         conn = open(db_id,db_pw)
         cursor = conn.cursor()
-        sql = f"INSERT INTO member (discord_id,discord_name,summoner_id) VALUES('{discord_id}','{discord_name}','{summoner_id}') ON DUPLICATE KEY UPDATE summoner_id = '{summoner_id}', discord_name = '{discord_name}'"
+        sql = f"INSERT INTO member (discord_id,discord_name,summoner_id,birthday) VALUES('{discord_id}','{discord_name}','{summoner_id}','{now}') ON DUPLICATE KEY UPDATE summoner_id = '{summoner_id}', discord_name = '{discord_name}'"
         cursor.execute(sql)
         conn.commit()
     except:
