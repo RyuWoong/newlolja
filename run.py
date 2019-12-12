@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -456,4 +456,4 @@ async def 소환사(ctx,*,lolname):
         else:
             await ctx.send(f"**{lolname}**의 티어는 **{solo_tier} {solo_rank}** 입니다.")
 
-bot.run(token[1])
+bot.run(token[0])
