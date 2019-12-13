@@ -12,10 +12,11 @@ apptitle = "LoLJa"
 footer = f"{apptitle} ver.OpenBeta | ⓒ 2019 깜뭉이"
 bot.STATUS_START = False
 bot.myGuild = None
-myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276, 654493812860780544]
+myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276, 654493812860780544,654825518461354004 ]
 normal_Channel = 654337874207965184
 chess_Channel = 654337910979559426
 rank_Channel = 654507949774995459
+waiting_Channel = 654825518461354004
 
 ## Default Function ##
 def check(ctx,type):
@@ -51,12 +52,13 @@ async def on_ready():
     #os.system('cls')
     os.system('clear')
     bot.myGuild = bot.get_guild(316770615644389376)
-    #myVoiceChannels = bot.myGuild.voice_channels
+    myVoiceChannels = bot.myGuild.voice_channels
     print("       @ Discord Bot LOLJA")
     print("       @ MADE BY. 깜뭉이")
     print("       @ Copyright 깜뭉이. 2019")
     print("       @ Start!")
     print("       GUILD -")
+    print(myVoiceChannels)
     bot.STATUS_START = True
 
 ## Discord error ##
@@ -91,7 +93,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="일반게임 - 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    new_channel = await category.create_voice_channel(name="일반게임 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(normal_Channel)
                     await member.move_to(new_channel)
@@ -103,7 +105,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="롤토체스 - 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
+                    new_channel = await category.create_voice_channel(name="롤토체스 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(chess_Channel)
                     await member.move_to(new_channel)
@@ -115,7 +117,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="듀오랭크 - 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
+                    new_channel = await category.create_voice_channel(name="듀오랭크 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
@@ -127,7 +129,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="자유랭크 - 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    new_channel = await category.create_voice_channel(name="자유랭크 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
@@ -166,18 +168,17 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!인증완료", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.2", inline=False)
         embed.add_field(name="!!티어갱신", value="소환사 티어 역할을 갱신합니다.", inline=False)
     elif (detail == "일반"):
+        embed.add_field(name="!!공지", value="서버 공지사항을 알려줍니다.", inline=False)
         embed.add_field(name="!!주사위", value="1~100까지의 값 중 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!뽑기 '최대 값(숫자)'", value="1~최대 값까지 숫자 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!스트리머", value="해당 서버에 소속된 스트리머를 표시합니다.", inline=False)
         embed.add_field(name="!!소환사 '소환사명'", value="해당 소환사의 정보를 표시합니다.", inline=False)
-        embed.add_field(name="!!도움말 '파티' 또는 '인증'", value="다른 주제의 명령어 도움말을 표시합니다.", inline=False)
     else:
-        #embed.add_field(name="!!공지", value="해당 서버 공지사항을 알려줍니다.", inline=False)
         embed.add_field(name="!!도움말 일반", value="일반 및 유틸 명령어을 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 팀", value="팀과 관련된 명령어를 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 인증", value="인증과 관련된 명령어를 보여줍니다.", inline=False)
     embed.set_footer(text=footer)
-    await ctx.author.send(embed=embed)
+    await ctx.message.author.send(embed=embed)
 
 @bot.command()
 async def 인증시작(ctx,*,summoner=""):
@@ -225,8 +226,6 @@ async def 인증완료(ctx):
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
         auth = lol.get_auth_value(summoner_id) #소환사id로 인증 값 불러오기
-
-        lasttier = member_info[6]
         solo_tier,solo_rank = lol.get_summoner_tier(summoner_id) # 현재 랭크 티어 가져오기.
         if solo_tier == None:
             tier = None      
@@ -443,7 +442,42 @@ async def 파티탈퇴(ctx,member:discord.Member=None):
                 await ctx.send(f"{leader.mention}님은 권한이 없습니다.")
                 log.logger.info(f"C: 파티탈퇴 S: 실패 W: {leader.name} R: 파티장이 아님")
 
+@bot.command()
+async def 공지(ctx):
+    log.logger.info(f"C: 공지 S: 시작 W: {ctx.message.author}")
+    try:
+        notices = db.get_notice()
+        url=bot.myGuild.icon_url
+        notice = notices[1]
+        date = notices[2]
+    except:
+        log.logger.error(f"C: 공지 S: 에러 W: {ctx.message.author}")
+    else:
+        embed=discord.Embed(title= f":tada: LOL PARTY 공지사항", description=f"작성일: {date}", color=0xf3bb76)
+        embed.set_thumbnail(url=url)
+        embed.add_field(name=":pushpin: 공지사항", value=f"{notice}", inline=False)
+        embed.set_footer(text=footer)
+        await ctx.message.author.send(embed=embed)
+        log.logger.info(f"C: 공지 S: 완료 W: {ctx.message.author}")
 
+@bot.command()
+async def 공지설정(ctx,*,notice=""):
+    await ctx.message.delete() 
+    if check(ctx,"admin"):
+        log.logger.info(f"C: 공지설정 S: 시작 W: {ctx.message.author}")
+        if notice == "":
+            return await ctx.message.author.send("공지사항을 입력해주세요.")
+        else:
+            try:
+                print(notice)
+                db.set_notice(notice)
+            except Exception as ex:
+                log.logger.error(f"C: 공지설정 S: 에러 W: {ctx.message.author} {ex}")
+            else:
+                await ctx.message.author.send("공지사항 설정이 완료 되었습니다.")
+                log.logger.info(f"C: 공지 S: 완료 W: {ctx.message.author}")
+    else:
+        pass
 
 @bot.command()
 async def 주사위(ctx):

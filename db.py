@@ -27,14 +27,8 @@ def check_connect():
         print("CONNECTION ERROR")
     return False
 
-def call_error():
-    exc_class,exc_obj, tb = sys.exc_info()
-    f = tb.tb_frame
-    lineno = tb.tb_lineno
-    filename = f.f_code.co_filename
-    linecache.checkcache(filename)
-    line = linecache.getline(filename, lineno, f.f_globals)
-    print(f"EXCEPTION IN ({filename}, LINE {lineno} '{line.strip()}'): {exc_obj}")
+def call_error(ex):
+    raise ex
 
 def check_exist(table,discord_id):
     try:
@@ -43,8 +37,8 @@ def check_exist(table,discord_id):
         sql = f"SELECT * FROM {table} WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         rows = cursor.fetchall()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -58,8 +52,8 @@ def get_streamer():
         sql = f"SELECT * FROM streamer"
         cursor.execute(sql)
         rows = cursor.fetchall()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -73,8 +67,8 @@ def set_streamer(info):
         sql = f"INSERT INTO streamer VALUES('{info[0]}','{info[1]}','{info[2]}','{info[3]}','{info[4]}')"
         cursor.execute(sql)
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -86,8 +80,8 @@ def del_streamer(name):
         sql = f"DELETE FROM streamer WHERE name='{name}'"
         cursor.execute(sql)
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -112,8 +106,8 @@ def get_party(discord_id):
         sql = f"SELECT party_name FROM member WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         rows = cursor.fetchone()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -127,8 +121,8 @@ def set_party(discord_name,discord_id,party_name,party_dec):
         sql = f"INSERT INTO party (discord_name,discord_id,party_name,party_dec) VALUES('{discord_name}','{discord_id}','{party_name}','{party_dec}')"
         cursor.execute(sql)
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -140,8 +134,8 @@ def set_partymemeber(party_name,discord_id):
         sql = f"UPDATE member SET party_name='{party_name}' WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -153,8 +147,8 @@ def del_partymember(discord_id):
         sql = f"UPDATE member SET party_name is NULL WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -168,8 +162,8 @@ def set_member(discord_id,discord_name,summoner_id):
         sql = f"INSERT INTO member (discord_id,discord_name,summoner_id,birthday) VALUES('{discord_id}','{discord_name}','{summoner_id}','{now}') ON DUPLICATE KEY UPDATE summoner_id = '{summoner_id}', discord_name = '{discord_name}'"
         cursor.execute(sql)
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -183,8 +177,8 @@ def get_member(discord_id):
         cursor.execute(sql)
         rows = cursor.fetchone()
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
@@ -202,8 +196,39 @@ def renew(discord_id,tier):
             sql = f"UPDATE member SET renew='{now}',summoner_tier='{tier}' WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_notice():
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"SELECT * FROM server"
+        cursor.execute(sql)
+        rows = cursor.fetchone()
+        conn.commit()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+        return rows if len(rows) > 0 else None
+
+
+def set_notice(notice):
+    today = datetime.datetime.now()
+    now = today.strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"UPDATE server SET notice='{notice}', date='{now}' WHERE no = 1"
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
