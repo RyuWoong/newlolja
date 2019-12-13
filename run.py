@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -18,15 +18,17 @@ chess_Channel = 654337910979559426
 rank_Channel = 654507949774995459
 waiting_Channel = 654825518461354004
 team_category = 376628550041731072
+caution_Channel = 506395577815138304
 
 ## Default Function ##
 def check(ctx,type):
     check = False
     member = ctx.message.author
     if type == "admin":
-        admin = ctx.message.author.permissions_in(ctx.channel)
-        check = admin.administrator
-        return check
+        admin = get(member.roles,name="관리자")
+        if admin != None:
+            check = True
+            return check
     elif type == "leader":
         leader = get(member.roles,name="파티장")
         if leader != None:
@@ -228,37 +230,50 @@ async def 인증완료(ctx):
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
         auth = lol.get_auth_value(summoner_id) #소환사id로 인증 값 불러오기
-        summoner_name = lol.get_summoner_name(summoner_id)
-        solo_tier,solo_rank = lol.get_summoner_tier(summoner_id) # 현재 랭크 티어 가져오기.
-        if solo_tier == None:
-            tier = None      
-        else:
-            tier = f"{solo_tier} {solo_rank}"   #인증 역할 가져오기
+        
+
     except Exception as ex:
         log.logger.error(f"C: 인증완료 S: 실패 R: {ex}")
         return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패 하였습니다. :sweat: ")
+
     else:
         if str(discord_id)==auth: #인증 단계
             await member.remove_roles(wait) #대기 역활 삭제
             auth_role = get(ctx.guild.roles,name="인증") #인증역할 찾기
             await member.add_roles(auth_role) #인증역할 부여
-
-            if tier == None:
+            summoner_name = lol.get_summoner_name(summoner_id)
+            leagues = lol.get_summoner_league(summoner_id)
+            if len(leagues) < 1:
                 tier_role = get(ctx.guild.roles,name=f"UNRANKED")
                 db.renew(discord_id,None)
                 await member.add_roles(tier_role)
+                solo_tier = "UNRANKED"
+                solo_rank = ""
             else:
-                tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
-                db.renew(discord_id,tier)
-                await member.add_roles(tier_role)
+                for league in leagues:
+                    if league['queueType'] == "RANKED_SOLO_5x5":
+                        solo = True
+                        solo_tier = league['tier']
+                        solo_rank = league['rank']
+                        break
+                    else:
+                        solo = False
+                if solo:
+                    tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
+                    db.renew(discord_id,f"{solo_tier} {solo_rank}")
+                    await member.add_roles(tier_role)
+                else:
+                    tier_role = get(ctx.guild.roles,name=f"UNRANKED")
+                    db.renew(discord_id,None)
+                    await member.add_roles(tier_role)
             url=bot.myGuild.icon_url
             embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xf3bb76)
             embed.set_thumbnail(url=url)
             embed.add_field(name="유저 정보", value=f"디스코드: {member}\n 소환사명: {summoner_name}", inline=False)
-            embed.add_field(name="티어 정보", value=f"현재티어: {tier}", inline=False)
+            embed.add_field(name="티어 정보", value=f"현재티어: {solo_tier} {solo_rank}", inline=False)
             await channel.send(content=f"{member.mention}",embed=embed)
         else:
-            await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패하였습니다. X(")
+            await ctx.send(f"{member.mention}\n:red_square: **인증번호**가 일치하지 않습니다. :sweat:")
             log.logger.info(f"C: 인증확인결과 S: 실패 W: {member.name} ID: {discord_id} KEY : {auth}")
 
 @bot.command()
@@ -508,6 +523,32 @@ async def 공지설정(ctx,*,notice=""):
         pass
 
 @bot.command()
+async def 경고(ctx,member:discord.Member,*,reason):
+    await ctx.message.delete()
+    if check(ctx,"admin"):
+        log.logger.info(f"C: 경고시작 S: 시작 W: {ctx.message.author}")
+        admin = ctx.message.author
+        channel=ctx.guild.get_channel(caution_Channel)
+        first_caution = get(member.roles,name="1차 경고")
+        if first_caution == None:
+            role = get(ctx.guild.roles,name="1차 경고")
+        else:
+            second_caution = get(member.roles,name="2차 경고")
+            if second_caution == None:
+                role = get(ctx.guild.roles,name="2차 경고")
+            else:
+                role = get(ctx.guild.roles,name="차단")
+
+        await member.add_roles(role)
+        embed=discord.Embed(title= f":no_entry: 제재조치 : {role.name}",description=f"{member.id}", color=role.color)
+        embed.add_field(name="관리자", value=f"{admin.mention}", inline=True)
+        embed.add_field(name="제재자", value=f"{member.mention}", inline=True)
+        embed.add_field(name="제재사유", value=f"{reason}", inline=False)
+        await channel.send(embed=embed)
+        if role.name == "차단":
+            ctx.send("차단이야")
+
+@bot.command()
 async def 주사위(ctx):
     num = random.randrange(1,101)
     log.logger.info(f"call : {ctx.message.author} func : 주사위")
@@ -543,7 +584,7 @@ async def 소환사(ctx,*,lolname):
                     solo_point = league['leaguePoints']
                 else:
                     solo = False
-            embed=discord.Embed(title= f"{lolname}",description=f"Level: {summoner_level}", color=0xf3bb76)
+            embed=discord.Embed(title= f"{lolname}",description=f"Lv. {summoner_level}", color=0xf3bb76)
             embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/9.24.2/img/profileicon/{summoner_Icon}.png")
             if solo:
                 embed.add_field(name="**SOLO RANK**", value=f"{solo_tier} {solo_rank} {solo_point}LP\nWins. {solo_wins}\nLosses. {solo_losses}", inline=False)
@@ -553,4 +594,4 @@ async def 소환사(ctx,*,lolname):
             await ctx.send(embed=embed)
 
 
-bot.run(token[0])
+bot.run(token[1])

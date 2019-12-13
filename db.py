@@ -205,7 +205,7 @@ def renew(discord_id,tier):
         conn = open(db_id,db_pw)
         cursor = conn.cursor()
         if tier == None:
-            sql = f"UPDATE member SET renew='{now}',summoner_tier is NULL WHERE discord_id='{discord_id}'"
+            sql = f"UPDATE member SET renew='{now}',summoner_tier = NULL WHERE discord_id='{discord_id}'"
         else:
             sql = f"UPDATE member SET renew='{now}',summoner_tier='{tier}' WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
