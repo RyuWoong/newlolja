@@ -85,7 +85,7 @@ def get_summoner_league(summoner_id):
     res = requests.get(url=URL,headers=Header)
     if(res.status_code) == 200:
         summoner_leagues = res.json()
-        print(summoner_leagues)
+        #print(summoner_leagues)
         return summoner_leagues
     else:
         return None

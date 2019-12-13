@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -144,8 +144,11 @@ async def on_voice_state_update(member,before,after):
 ## Discord Command ##
 @bot.command()
 async def 테스트(ctx):
-    srt = "1","2"
-    print(srt)
+    await ctx.message.delete()
+    role = get(ctx.guild.roles,name="Sparkle")
+    members = role.members
+    MVP = get(members,id=338203400271560704)
+    print(MVP)
 
 
 @bot.command()
@@ -287,34 +290,53 @@ async def 티어갱신(ctx):
         try:
             member_info = db.get_member(discord_id)
             summoner_id = member_info[5]
+            summoner_name = lol.get_summoner_name(summoner_id)
+
             if member_info[6]==None:
-                lasttier = "UNRANKED" 
+                get_lasttier = "UNRANKED"
             else:
-                lasttier = member_info[6]
+                get_lasttier = member_info[6]
             
-            solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
-            if solo_tier == None:
-                tier = "UNRANKED"      
+            leagues = lol.get_summoner_league(summoner_id)
+            if len(leagues) < 1:
+                solo = False
             else:
-                tier = f"{solo_tier} {solo_rank}"
+                for league in leagues:
+                    if league['queueType'] == "RANKED_SOLO_5x5":
+                        solo = True
+                        solo_tier = league['tier']
+                        solo_rank = league['rank']
+                        break
+                    else:
+                        solo = False
         except Exception as ex:
             log.logger.error(f"C: 티어갱신 S: 실패 R: {ex}")
             return await ctx.send(f"{member.mention}\n:red_square: 갱신을 실패하였습니다. X( ")
         else:
-            lasttier = lasttier.split()
+            url=bot.myGuild.icon_url
+            lasttier = get_lasttier.split()
             tier_role = get(ctx.guild.roles,name=f"{lasttier[0]}")
             await member.remove_roles(tier_role)
 
-            if solo_tier == None:
-                tier_role = get(ctx.guild.roles,name=f"{tier}")
-                db.renew(discord_id,None)
-                await member.add_roles(tier_role)
-                await ctx.send(f"{member.mention}\n{lasttier} :point_right: {tier}")
-            else:
+            if solo:
                 tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
                 await member.add_roles(tier_role)
-                db.renew(discord_id,tier)
-                await ctx.send(f"{member.mention}\n{lasttier} :point_right: {tier}")
+                db.renew(discord_id,f"{solo_tier} {solo_rank}")
+                embed=discord.Embed(title= f":white_check_mark: LOL PARTY 티어 갱신", color=0xf3bb76)
+                embed.set_thumbnail(url=url)
+                embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드. {member.mention}\n 소환사명. {summoner_name}", inline=False)
+                embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. {get_lasttier}\n현재티어. {solo_tier} {solo_rank}", inline=False)
+                await ctx.send(embed=embed)
+                
+            else:
+                tier_role = get(ctx.guild.roles,name=f"UNRANKED")
+                db.renew(discord_id,None)
+                await member.add_roles(tier_role)
+                embed=discord.Embed(title= f":white_check_mark: LOL PARTY 티어 갱신", color=0xf3bb76)
+                embed.set_thumbnail(url=url)
+                embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드. {member.mention}\n 소환사명. {summoner_name}", inline=False)
+                embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. {get_lasttier}\n현재티어. UNRANKED", inline=False)
+                await ctx.send(embed=embed)
             log.logger.info(f"C: 티어갱신 S: 완료 W: {member.name}")
             
 
@@ -547,7 +569,7 @@ async def 경고(ctx,member:discord.Member,*,reason):
         embed.add_field(name="제재사유", value=f"{reason}", inline=False)
         await channel.send(embed=embed)
         if role.name == "차단":
-            ctx.send("차단이야")
+            await admin.send("해당 유저를 차단해주세요.")
 
 @bot.command()
 async def 주사위(ctx):
@@ -560,6 +582,23 @@ async def 뽑기(ctx,number: int):
     num = random.randrange(1,number)
     log.logger.info(f"call : {ctx.message.author} func : 뽑기")
     await ctx.send(f"선택된 번호는! **{num}**")
+
+@bot.command()
+async def 명예의전당(ctx):
+    await ctx.message.delete()
+    role = get(ctx.guild.roles,name="Sparkle")
+    members = role.members
+    leader = get(members,id=248123112472838144) #승오
+    mvp = get(members,id =338203400271560704) #경상
+    member1 = get(members,id=275126185745186816) #투킬
+    member2 = get(members,id=614752807639187475) #우혁
+    member3 = get(members,id=244372339930693632) #잠자는숨속의준위
+    embed=discord.Embed(title= f"명예의 전당 :trophy:",description=f"LOL PARTY 리그 Season3 우승팀", color=role.color)
+    embed.set_image(url="https://media.discordapp.net/attachments/624997033362849827/654935380738703361/Sparkle.gif")
+    embed.add_field(name=":star: 팀장", value=f"**{leader}**", inline=False)
+    embed.add_field(name=":family_mmbb: 팀원", value=f"**{member1}\n{member2}\n{member3}\n{mvp}**", inline=False)
+    embed.add_field(name=":medal: MVP", value=f"**{mvp}**", inline=False)
+    await ctx.send(embed=embed)
 
 @bot.command()
 async def 소환사(ctx,*,lolname):
@@ -595,4 +634,4 @@ async def 소환사(ctx,*,lolname):
             await ctx.send(embed=embed)
 
 
-bot.run(token[0])
+bot.run(token[1])
