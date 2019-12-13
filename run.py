@@ -17,6 +17,7 @@ normal_Channel = 654337874207965184
 chess_Channel = 654337910979559426
 rank_Channel = 654507949774995459
 waiting_Channel = 654825518461354004
+team_category = 376628550041731072
 
 ## Default Function ##
 def check(ctx,type):
@@ -52,13 +53,12 @@ async def on_ready():
     #os.system('cls')
     os.system('clear')
     bot.myGuild = bot.get_guild(316770615644389376)
-    myVoiceChannels = bot.myGuild.voice_channels
+    #myVoiceChannels = bot.myGuild.categories
     print("       @ Discord Bot LOLJA")
     print("       @ MADE BY. 깜뭉이")
     print("       @ Copyright 깜뭉이. 2019")
     print("       @ Start!")
     print("       GUILD -")
-    print(myVoiceChannels)
     bot.STATUS_START = True
 
 ## Discord error ##
@@ -153,14 +153,15 @@ async def 도움말(ctx,detail=None):
     log.logger.info(f"call: {ctx.message.author} func: 도움")
     embed=discord.Embed(title= f"{apptitle} 사용서" if detail==None else f"{apptitle} {detail} 사용서" , description=f"명령어 내 값은 띄어쓰기로 구분, @은 호출", color=0xf3bb76)
     embed.set_thumbnail(url=url)
-    if (detail == "팀"):
+    if (detail == "파티"):
         embed.add_field(name="!!파티가입 '@유저'", value="파티장) 해당 유저를 본인 파티 소속으로 추가합니다.", inline=False)
         embed.add_field(name="!!파티탈퇴", value="파티에서 탈퇴합니다. 파티장인 경우 관리자에게 문의해주세요.", inline=False)
         embed.add_field(name="!!파티탈퇴 '@유저'", value="파티장) 파티에서 추방합니다. ", inline=False)
-        embed.add_field(name="!!파티정보 '팀명'", value="해당 파티정보와 파티원들을 소개합니다.", inline=False)
+        embed.add_field(name="!!파티목록", value="서버내 파티 목록을 보여줍니다. ", inline=False)
+        #embed.add_field(name="!!파티정보 '팀명'", value="해당 파티정보와 파티원들을 소개합니다.", inline=False)
         #embed.add_field(name="!!파티소개 '소개글'", value="파티장 -> 파티정보에 보여질 소개글을 작성합니다. (100자 이내)", inline=False)
     elif (detail == "관리자"):
-        embed.add_field(name="!!파티생성 '@팀명' '@유저'", value="파티를 생성하며, 파티장을 선정합니다.\n사전에 해당 팀의 역할 추가 및 역할멘션을 허용해주세요.", inline=False)
+        embed.add_field(name="!!파티등록 '@팀명' '@유저'", value="파티를 생성하며, 파티장을 선정합니다.\n사전에 해당 팀의 역할 추가 및 역할멘션을 허용해주세요.", inline=False)
         embed.add_field(name="!!경기등록 '@팀명' '@팀명' '설명'", value="경기일정을 추가합니다. 설정된 경기는 리그일정으로 볼 수 있습니다.", inline=False)
         embed.add_field(name="!!경기결과 '매치업번호' '@팀명'", value="경기 결과 등록 및 승점 반영. 승자를 입력해주시고,무승부라면 @팀명에 무승부를 입력.", inline=False)
     elif (detail == "인증"):
@@ -175,7 +176,7 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!소환사 '소환사명'", value="해당 소환사의 정보를 표시합니다.", inline=False)
     else:
         embed.add_field(name="!!도움말 일반", value="일반 및 유틸 명령어을 보여줍니다.", inline=False)
-        embed.add_field(name="!!도움말 팀", value="팀과 관련된 명령어를 보여줍니다.", inline=False)
+        embed.add_field(name="!!도움말 파티", value="파티와 관련된 명령어를 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 인증", value="인증과 관련된 명령어를 보여줍니다.", inline=False)
     embed.set_footer(text=footer)
     await ctx.message.author.send(embed=embed)
@@ -199,7 +200,7 @@ async def 인증시작(ctx,*,summoner=""):
         role = get(ctx.guild.roles, name="대기") #대기 역할 가져오기
     except Exception as ex:
         log.logger.error(f"C: 인증시작 S:실패 R: {ex}")
-        return await ctx.send (f"{member.mention}\n:x: 인증이 실패하였습니다.\nballot_box_with_check: **소환사 명**을 정확히 입력해주세요.")
+        return await ctx.send (f"{member.mention}\n:x: 인증이 실패하였습니다.\n:ballot_box_with_check: **소환사 명**을 정확히 입력해주세요.")
     else:
         await member.add_roles(role) # 대기 라는 역할을 부여하여 유저에게 인증 시작 단계임을 표시합니다.
         embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증", description=f"대표하는 소환사 계정을 인증합니다.", color=0xf3bb76)
@@ -223,9 +224,11 @@ async def 인증완료(ctx):
         return await ctx.send(f"{member.mention}\n:exclamation: !!인증시작부터 먼저 입력해주세요.\n:question: 자세한 사항은 `!!도움말 인증`을 확인해주세요.")
     wait = get(member.roles,name="대기")
     try:
+        channel = ctx.guild.get_channel(654855564521897984)
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
         auth = lol.get_auth_value(summoner_id) #소환사id로 인증 값 불러오기
+        summoner_name = lol.get_summoner_name(summoner_id)
         solo_tier,solo_rank = lol.get_summoner_tier(summoner_id) # 현재 랭크 티어 가져오기.
         if solo_tier == None:
             tier = None      
@@ -235,7 +238,7 @@ async def 인증완료(ctx):
         log.logger.error(f"C: 인증완료 S: 실패 R: {ex}")
         return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패 하였습니다. :sweat: ")
     else:
-        if str(discord_id) == auth: #인증 단계
+        if str(discord_id)==auth: #인증 단계
             await member.remove_roles(wait) #대기 역활 삭제
             auth_role = get(ctx.guild.roles,name="인증") #인증역할 찾기
             await member.add_roles(auth_role) #인증역할 부여
@@ -248,8 +251,12 @@ async def 인증완료(ctx):
                 tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
                 db.renew(discord_id,tier)
                 await member.add_roles(tier_role)
-            await ctx.send(f"{member.mention}\n:white_check_mark: 소환사 인증이 확인 되었습니다.")
-            log.logger.info(f"C: 인증확인 S: 완료 W: {member.name}")
+            url=bot.myGuild.icon_url
+            embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xf3bb76)
+            embed.set_thumbnail(url=url)
+            embed.add_field(name="유저 정보", value=f"디스코드: {member}\n 소환사명: {summoner_name}", inline=False)
+            embed.add_field(name="티어 정보", value=f"현재티어: {tier}", inline=False)
+            await channel.send(content=f"{member.mention}",embed=embed)
         else:
             await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패하였습니다. X(")
             log.logger.info(f"C: 인증확인결과 S: 실패 W: {member.name} ID: {discord_id} KEY : {auth}")
@@ -368,29 +375,50 @@ async def 스트리머해제(ctx,streamer: discord.Member):
             log.logger.info(f"C: 스트리머해제 S: 완료 W: {ctx.author.name} T: {streamer}")
     else:
         pass
+@bot.command()
+async def 파티목록(ctx):
+    await ctx.message.delete()
+    member = ctx.message.author
+    log.logger.info(f"C: 파티목록 S: 시작 W: {member.name}")
+    partyList = db.get_partyList()
+    embed=discord.Embed(title= f":scroll: 파티목록", description=f"LOL PARTY 서버 내 파티 목록입니다.", color=0xf3bb76)
+    for party in partyList:
+        party_leader = ctx.guild.get_member(int(party[1]))
+        party_name = party[2]
+        party_time = party[4]
+        party_tier = party[5]
+        party_type = party[6]
+        embed.add_field(name=f":tada: **{party_name}**", value=f"파티장 : {party_leader}\n시간대: {party_time}\n티어대: {party_tier}\n유형: {party_type}", inline=False)
+    await ctx.message.author.send(embed=embed)
 
 @bot.command()
-async def 파티등록(ctx,role_name:discord.Role,discord:discord.Member):
+async def 파티등록(ctx,role_name:discord.Role,member:discord.Member):
     await ctx.message.delete()
     if check(ctx,'admin'):
         log.logger.info(f"C: 파티등록 S: 시작 W: {ctx.message.author.name}")
         party_name = role_name.name
-        discord_id = discord.id
-        discord_name = discord.name
+        discord_id = member.id
+        discord_name = member.name
         party_dec = f"안녕하세요. {party_name}입니다!"
         print(discord_name,discord_id,party_name,party_dec)
         try:
             db.set_party(discord_name,discord_id,party_name,party_dec)
             db.set_partymemeber(party_name,discord_id)
             role = get(ctx.guild.roles, name="파티장")
+            category = get(ctx.guild.categories,id=376628550041731072)
+            overwrite={
+                ctx.guild.default_role : discord.PermissionOverwrite(read_messages=False),
+                role_name : discord.PermissionOverwrite(read_messages=True)
+            }
         except Exception as ex:
             log.logger.error(f"C: 파티등록 S: 실패 R: {ex}")
             return await ctx.send("파티등록에 실패했습니다.")
         else:
-            await discord.add_roles(role)
-            await discord.add_roles(role_name)
-            await discord.send(f"**{discord_name}**님께서 신청해주신 파티가 승인 되었습니다.\n파티장 역할이 부여 되었으며, 파티 역할 및 채널이 생성 되었습니다. 자세한 운영은 관리자에게 문의해주시거나 **LOLJA** 명령어를 확인해주세요.")
-            log.logger.info(f"C: 파티등록 S: 완료 W: {ctx.message.author.name} T: {discord}")
+            await member.add_roles(role)
+            await member.add_roles(role_name)
+            await category.create_text_channel(name=f"🎉{party_name}",overwrites=overwrite,topic=f"{party_name} 파티의 채널입니다.")
+            await member.send(f"**{discord_name}**님께서 신청해주신 파티가 승인 되었습니다.\n파티장 역할이 부여 되었으며, 파티 역할 및 채널이 생성 되었습니다. 자세한 운영은 관리자에게 문의해주시거나 **LOLJA** 명령어를 확인해주세요.")
+            log.logger.info(f"C: 파티등록 S: 완료 W: {ctx.message.author.name} T: {member.name}")
     else:
         pass
 
@@ -493,15 +521,36 @@ async def 뽑기(ctx,number: int):
 
 @bot.command()
 async def 소환사(ctx,*,lolname):
-    summoner_id = lol.get_summoner_id(lolname)
-    if summoner_id == None:
-        await ctx.send(f"**{lolname}**은 찾을 수 없는 소환사 입니다.")
+    summoner = lol.get_summoner_info(lolname)
+    if summoner == None:
+        await ctx.send(f"**{lolname}** 소환사를 찾을 수 없습니다.")
     else:
-        solo_tier,solo_rank = lol.get_summoner_tier(summoner_id)
         log.logger.info(f"call: {ctx.message.author} func: 소환사정보")
-        if solo_rank == None:
-            await ctx.send(f"**{lolname}**의 랭크 정보가 없습니다.")
+        summoner_level = summoner['summonerLevel']
+        summoner_Icon = summoner['profileIconId']
+        summoner_id = summoner['id']
+        leagues = lol.get_summoner_league(summoner_id)
+        if leagues == None:
+            await ctx.send(f"**{lolname}** 소환사의 랭크 정보를 불러오다가 넘어졌습니다. :sob:")
         else:
-            await ctx.send(f"**{lolname}**의 티어는 **{solo_tier} {solo_rank}** 입니다.")
+            for league in leagues:
+                if league['queueType'] == "RANKED_SOLO_5x5":
+                    solo = True
+                    solo_wins = league['wins']
+                    solo_losses = league['losses']
+                    solo_tier = league['tier']
+                    solo_rank = league['rank']
+                    solo_point = league['leaguePoints']
+                else:
+                    solo = False
+            embed=discord.Embed(title= f"{lolname}",description=f"Level: {summoner_level}", color=0xf3bb76)
+            embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/9.24.2/img/profileicon/{summoner_Icon}.png")
+            if solo:
+                embed.add_field(name="**SOLO RANK**", value=f"{solo_tier} {solo_rank} {solo_point}LP\nWins. {solo_wins}\nLosses. {solo_losses}", inline=False)
+            else:
+                embed.add_field(name="**SOLO RANK**", value=f"정보가 없습니다.", inline=False)
+            embed.set_footer(text=footer)
+            await ctx.send(embed=embed)
+
 
 bot.run(token[0])

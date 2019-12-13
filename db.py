@@ -93,11 +93,25 @@ def up_streamer(discord_id,dec):
         sql = f"UPDATE streamer SET dec='{dec}' WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
-    except:
-        call_error()
+    except Exception as ex:
+        call_error(ex)
     finally:
         cursor.close()
         conn.close()
+
+def get_partyList():
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"SELECT * FROM party"
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+        return rows if len(rows) > 0 else None
 
 def get_party(discord_id):
     try:

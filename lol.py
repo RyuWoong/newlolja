@@ -26,6 +26,17 @@ def get_summoner_id(summoner_name):
     else:
         return None
 
+def get_summoner_name(summoner_id):
+    api_key = fc.GET_KEY("lol.txt")
+    URL = f"{default_URL}/lol/summoner/v4/summoners/{summoner_id}"
+    Header = Headers(api_key[0])
+    res = requests.get(url=URL,headers=Header)
+    if int(res.status_code) == 200:
+        summoner = res.json()
+        return summoner['name']
+    else:
+        return None
+
 def get_auth_value(summoner_id):
     api_key = fc.GET_KEY("lol.txt")
     URL = f"{default_URL}/lol/platform/v4/third-party-code/by-summoner/{summoner_id}"
@@ -35,18 +46,18 @@ def get_auth_value(summoner_id):
         summoner = res.json()
         return summoner
 
-
 def get_summoner_tier(summoner_id):
     api_key = fc.GET_KEY("lol.txt")
     URL = f"{default_URL}/lol/league/v4/entries/by-summoner/{summoner_id}"
     Header = Headers(api_key[0])
     summoner_res = requests.get(url=URL,headers=Header)
     summoner_leagues = summoner_res.json()
-    summoner_league = None
     for league in summoner_leagues:
         if league['queueType'] == "RANKED_SOLO_5x5":
             summoner_league = league
             break
+        else:
+            summoner_league = None
     if summoner_league == None:
         return None,None
     elif summoner_league['queueType'] == 'RANKED_SOLO_5x5':
@@ -55,3 +66,26 @@ def get_summoner_tier(summoner_id):
         return solo_tier,solo_rank
     else:
         return None,None
+def get_summoner_info(summoner_name):
+    api_key = fc.GET_KEY("lol.txt")
+    URL = f"{default_URL}/lol/summoner/v4/summoners/by-name/{summoner_name}"
+    Header = Headers(api_key[0])
+    res = requests.get(url=URL,headers=Header)
+    if int(res.status_code) == 200:
+        summoner = res.json()
+        return summoner 
+    else:
+        return None
+
+
+def get_summoner_league(summoner_id):
+    api_key = fc.GET_KEY("lol.txt")
+    URL = f"{default_URL}/lol/league/v4/entries/by-summoner/{summoner_id}"
+    Header = Headers(api_key[0])
+    res = requests.get(url=URL,headers=Header)
+    if(res.status_code) == 200:
+        summoner_leagues = res.json()
+        print(summoner_leagues)
+        return summoner_leagues
+    else:
+        return None
