@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -266,6 +266,7 @@ async def 인증완료(ctx):
                     tier_role = get(ctx.guild.roles,name=f"UNRANKED")
                     db.renew(discord_id,None)
                     await member.add_roles(tier_role)
+
             url=bot.myGuild.icon_url
             embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xf3bb76)
             embed.set_thumbnail(url=url)
@@ -594,4 +595,4 @@ async def 소환사(ctx,*,lolname):
             await ctx.send(embed=embed)
 
 
-bot.run(token[1])
+bot.run(token[0])
