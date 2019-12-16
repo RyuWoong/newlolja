@@ -19,6 +19,11 @@ rank_Channel = 654507949774995459
 waiting_Channel = 654825518461354004
 team_category = 376628550041731072
 caution_Channel = 506395577815138304
+civilwar_Channel = 654952875583209502
+emoji_url = "https://cdn.discordapp.com/emojis/"
+emblem_Id = [654644195260366848,654644204978307072,654644217284526091,654644225706557470,654644237278773258,654644245277442048,654644294019448832,654644301975912479,654644310054273036]
+emblem_Index = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","DIAMOND","MASTER","GRANDMASTER","CHALLENGER"]
+
 
 ## Default Function ##
 def check(ctx,type):
@@ -70,6 +75,16 @@ async def on_ready():
 
 ## Discord Event##
 @bot.event
+async def on_member_ban(guild,user):
+    admin = get(guild.roles,name="관리자")
+    channel= guild.get_channel(caution_Channel)
+    embed=discord.Embed(title= f":no_entry: 제재조치 : 차단",description=f"{user.id}", color="#ff0000")
+    embed.add_field(name="관리자", value=f"{admin.mention}", inline=True)
+    embed.add_field(name="제재자", value=f"{user.mention}", inline=True)
+    embed.add_field(name="제재사유", value=f"경고 누적 혹은 스팸, 악성유저로 서버에서 차단되었습니다.", inline=False)
+    await channel.send(embed=embed)
+
+@bot.event
 async def on_voice_state_update(member,before,after):
     left_channel = before.channel
     now_channel = after.channel
@@ -95,7 +110,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="일반게임 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    new_channel = await category.create_voice_channel(name="일반 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(normal_Channel)
                     await member.move_to(new_channel)
@@ -107,7 +122,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="롤토체스 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
+                    new_channel = await category.create_voice_channel(name="TFT 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(chess_Channel)
                     await member.move_to(new_channel)
@@ -119,7 +134,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="듀오랭크 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
+                    new_channel = await category.create_voice_channel(name="듀오 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
@@ -131,7 +146,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="자유랭크 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    new_channel = await category.create_voice_channel(name="자유 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
@@ -142,13 +157,10 @@ async def on_voice_state_update(member,before,after):
 
 
 ## Discord Command ##
-@bot.command()
-async def 테스트(ctx):
-    await ctx.message.delete()
-    role = get(ctx.guild.roles,name="Sparkle")
-    members = role.members
-    MVP = get(members,id=338203400271560704)
-    print(MVP)
+# @bot.command()
+# async def 테스트(ctx):
+#     admin = get(ctx.guild.roles,name="관리자")
+#     await ctx.send(admin.mention)
 
 
 @bot.command()
@@ -271,11 +283,12 @@ async def 인증완료(ctx):
                     await member.add_roles(tier_role)
 
             url=bot.myGuild.icon_url
+            index = emblem_Index.index(solo_tier)
             embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xf3bb76)
             embed.set_thumbnail(url=url)
-            embed.add_field(name="유저 정보", value=f"디스코드: {member}\n 소환사명: {summoner_name}", inline=False)
-            embed.add_field(name="티어 정보", value=f"현재티어: {solo_tier} {solo_rank}", inline=False)
-            await channel.send(content=f"{member.mention}",embed=embed)
+            embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {membe.mention}\n소환사명: {summoner_name}", inline=False)
+            embed.add_field(name=":medal: **티어 정보**", value=f"현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
+            await channel.send(embed=embed)
         else:
             await ctx.send(f"{member.mention}\n:red_square: **인증번호**가 일치하지 않습니다. :sweat:")
             log.logger.info(f"C: 인증확인결과 S: 실패 W: {member.name} ID: {discord_id} KEY : {auth}")
@@ -322,20 +335,23 @@ async def 티어갱신(ctx):
                 tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
                 await member.add_roles(tier_role)
                 db.renew(discord_id,f"{solo_tier} {solo_rank}")
+                bindex = emblem_Index.index(lasttier[0]) 
+                index = emblem_Index.index(solo_tier)
                 embed=discord.Embed(title= f":white_check_mark: LOL PARTY 티어 갱신", color=0xf3bb76)
                 embed.set_thumbnail(url=url)
-                embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드. {member.mention}\n 소환사명. {summoner_name}", inline=False)
-                embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. {get_lasttier}\n현재티어. {solo_tier} {solo_rank}", inline=False)
+                embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {member.mention}\n 소환사명: {summoner_name}", inline=False)
+                embed.add_field(name=":medal: **티어 정보**", value=f"이전티어: <:LOLPARTY:{emblem_Id[bindex]}> {get_lasttier}\n현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
                 await ctx.send(embed=embed)
                 
             else:
                 tier_role = get(ctx.guild.roles,name=f"UNRANKED")
                 db.renew(discord_id,None)
                 await member.add_roles(tier_role)
+                index = emblem_Index.index(lasttier[0])
                 embed=discord.Embed(title= f":white_check_mark: LOL PARTY 티어 갱신", color=0xf3bb76)
                 embed.set_thumbnail(url=url)
                 embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드. {member.mention}\n 소환사명. {summoner_name}", inline=False)
-                embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. {get_lasttier}\n현재티어. UNRANKED", inline=False)
+                embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. <:LOLPARTY:{emblem_Id[index]}> {get_lasttier}\n현재티어. UNRANKED", inline=False)
                 await ctx.send(embed=embed)
             log.logger.info(f"C: 티어갱신 S: 완료 W: {member.name}")
             
@@ -445,8 +461,8 @@ async def 파티등록(ctx,role_name:discord.Role,member:discord.Member):
             role = get(ctx.guild.roles, name="파티장")
             category = get(ctx.guild.categories,id=376628550041731072)
             overwrite={
-                ctx.guild.default_role : discord.PermissionOverwrite(read_messages=False),
-                role_name : discord.PermissionOverwrite(read_messages=True)
+                ctx.guild.default_role : discord.PermissionOverwrite(send_messages=False),
+                role_name : discord.PermissionOverwrite(send_messages=True)
             }
         except Exception as ex:
             log.logger.error(f"C: 파티등록 S: 실패 R: {ex}")
@@ -572,6 +588,40 @@ async def 경고(ctx,member:discord.Member,*,reason):
             await admin.send("해당 유저를 차단해주세요.")
 
 @bot.command()
+async def 내전(ctx):
+    await ctx.message.delete()
+    channel = ctx.guild.get_channel(waiting_Channel)
+    text_Channel = ctx.guild.get_channel(civilwar_Channel)
+    members = channel.members
+    category = channel.category
+    for member in members:
+        print(member)
+        teams = list()
+        team = list()
+        team.append(member)
+        members.remove(member)
+        if len(team) == 5:
+            if len(members) != 0:
+                teams.append(team)
+                team.clear()
+        if len(members) == 0:
+            teams.append(team)
+    embed=discord.Embed(title= f"LOL Party 내전",description=f"LOL PARTY 내전 랜덤 팀 배정", color=0xf3bb76)  
+    for team in teams:
+        team_num = 1
+        team_Channel = await category.create_voice_channel(name=f"🔥TEAM. {team_num}",bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+        member_mention = list()
+
+        for member in team:
+            member_mention.append(member.mention)
+            await member.move_to(team_Channel)
+           
+        embed.add_field(name=f"🔥TEAM. {team_num}", value=",".join(map(str,member_mention)), inline=False)
+        team_num = team_num+1
+        member_mention.clear()
+    await text_Channel.send(embed=embed)
+
+@bot.command()
 async def 주사위(ctx):
     num = random.randrange(1,101)
     log.logger.info(f"call : {ctx.message.author} func : 주사위")
@@ -592,7 +642,7 @@ async def 명예의전당(ctx):
     mvp = get(members,id =338203400271560704) #경상
     member1 = get(members,id=275126185745186816) #투킬
     member2 = get(members,id=614752807639187475) #우혁
-    member3 = get(members,id=244372339930693632) #잠자는숨속의준위
+    member3 = get(members,id=244372339930693632) #잠자는숲속의준위
     embed=discord.Embed(title= f"명예의 전당 :trophy:",description=f"LOL PARTY 리그 Season3 우승팀", color=role.color)
     embed.set_image(url="https://media.discordapp.net/attachments/624997033362849827/654935380738703361/Sparkle.gif")
     embed.add_field(name=":star: 팀장", value=f"**{leader}**", inline=False)
@@ -627,9 +677,11 @@ async def 소환사(ctx,*,lolname):
             embed=discord.Embed(title= f"{lolname}",description=f"Lv. {summoner_level}", color=0xf3bb76)
             embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/9.24.2/img/profileicon/{summoner_Icon}.png")
             if solo:
-                embed.add_field(name="**SOLO RANK**", value=f"{solo_tier} {solo_rank} {solo_point}LP\nWins. {solo_wins}\nLosses. {solo_losses}", inline=False)
+                percent = solo_wins/(solo_wins+solo_losses)*100
+                index = emblem_Index.index(solo_tier)
+                embed.add_field(name="**SOLO RANK**", value=f"<:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank} {solo_point} LP\n:blue_circle: **{solo_wins} :red_circle: {solo_losses} :green_circle: {int(percent)}%**" , inline=False)
             else:
-                embed.add_field(name="**SOLO RANK**", value=f"정보가 없습니다.", inline=False)
+                embed.add_field(name="**SOLO RANK**", value=f"정보가 없습니다.", inline=True)
             embed.set_footer(text=footer)
             await ctx.send(embed=embed)
 
