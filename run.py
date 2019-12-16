@@ -661,8 +661,11 @@ async def 소환사(ctx,*,lolname):
         summoner_Icon = summoner['profileIconId']
         summoner_id = summoner['id']
         leagues = lol.get_summoner_league(summoner_id)
-        if leagues == None:
-            await ctx.send(f"**{lolname}** 소환사의 랭크 정보를 불러오다가 넘어졌습니다. :sob:")
+        print(leagues)
+        embed=discord.Embed(title= f"{lolname}",description=f"Lv. {summoner_level}", color=0xf3bb76)
+        embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/9.24.2/img/profileicon/{summoner_Icon}.png")
+        if len(leagues) < 1:
+            embed.add_field(name="**SOLO RANK**", value=f"소환사 랭크 정보가 없습니다.", inline=True)
         else:
             for league in leagues:
                 if league['queueType'] == "RANKED_SOLO_5x5":
@@ -674,16 +677,14 @@ async def 소환사(ctx,*,lolname):
                     solo_point = league['leaguePoints']
                 else:
                     solo = False
-            embed=discord.Embed(title= f"{lolname}",description=f"Lv. {summoner_level}", color=0xf3bb76)
-            embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/9.24.2/img/profileicon/{summoner_Icon}.png")
             if solo:
                 percent = solo_wins/(solo_wins+solo_losses)*100
                 index = emblem_Index.index(solo_tier)
                 embed.add_field(name="**SOLO RANK**", value=f"<:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank} {solo_point} LP\n:blue_circle: **{solo_wins} :red_circle: {solo_losses} :green_circle: {int(percent)}%**" , inline=False)
             else:
                 embed.add_field(name="**SOLO RANK**", value=f"정보가 없습니다.", inline=True)
-            embed.set_footer(text=footer)
-            await ctx.send(embed=embed)
+        embed.set_footer(text=footer)
+        await ctx.send(embed=embed)
 
 
 bot.run(token[0])
