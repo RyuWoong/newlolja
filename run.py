@@ -675,6 +675,7 @@ async def 소환사(ctx,*,lolname):
                     solo_tier = league['tier']
                     solo_rank = league['rank']
                     solo_point = league['leaguePoints']
+                    break
                 else:
                     solo = False
             if solo:
