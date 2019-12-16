@@ -286,7 +286,7 @@ async def 인증완료(ctx):
             index = emblem_Index.index(solo_tier)
             embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xf3bb76)
             embed.set_thumbnail(url=url)
-            embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {membe.mention}\n소환사명: {summoner_name}", inline=False)
+            embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {member.mention}\n소환사명: {summoner_name}", inline=False)
             embed.add_field(name=":medal: **티어 정보**", value=f"현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
             await channel.send(embed=embed)
         else:
@@ -660,8 +660,8 @@ async def 소환사(ctx,*,lolname):
         summoner_level = summoner['summonerLevel']
         summoner_Icon = summoner['profileIconId']
         summoner_id = summoner['id']
+        account_id = summoner['accountId']
         leagues = lol.get_summoner_league(summoner_id)
-        print(leagues)
         embed=discord.Embed(title= f"{lolname}",description=f"Lv. {summoner_level}", color=0xf3bb76)
         embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/9.24.2/img/profileicon/{summoner_Icon}.png")
         if len(leagues) < 1:

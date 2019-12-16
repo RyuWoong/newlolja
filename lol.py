@@ -77,7 +77,6 @@ def get_summoner_info(summoner_name):
     else:
         return None
 
-
 def get_summoner_league(summoner_id):
     api_key = fc.GET_KEY("lol.txt")
     URL = f"{default_URL}/lol/league/v4/entries/by-summoner/{summoner_id}"
@@ -87,5 +86,16 @@ def get_summoner_league(summoner_id):
         summoner_leagues = res.json()
         #print(summoner_leagues)
         return summoner_leagues
+    else:
+        return None
+
+def get_account_match(account_id):
+    api_key = fc.GET_KEY("lol.txt")
+    URL = f"{default_URL}/lol/match/v4/matchlists/by-account/{account_Id}"
+    Header = Headers(api_key[0])
+    res = requests.get(url=URL,headers=Header)
+    if(res.status_code) == 200:
+        account_matches = res.json()
+        return account_matches
     else:
         return None
