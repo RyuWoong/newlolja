@@ -158,7 +158,7 @@ def del_partymember(discord_id):
     try:
         conn = open(db_id,db_pw)
         cursor = conn.cursor()
-        sql = f"UPDATE member SET party_name is NULL WHERE discord_id='{discord_id}'"
+        sql = f"UPDATE member SET party_name = NULL WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
     except Exception as ex:
@@ -166,6 +166,21 @@ def del_partymember(discord_id):
     finally:
         cursor.close()
         conn.close()
+
+def get_partyInfo(party_name):
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"SELECT * FROM party WHERE party_name = '{party_name}'"
+        cursor.execute(sql)
+        rows = cursor.fetchone()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+        return rows if len(rows) > 0 else None
+
 
 def set_member(discord_id,discord_name,summoner_id):
     today = datetime.datetime.now()

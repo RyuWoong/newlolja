@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -76,9 +76,11 @@ async def on_ready():
 ## Discord Event##
 @bot.event
 async def on_member_ban(guild,user):
+    print(guild,user)
     admin = get(guild.roles,name="관리자")
     channel= guild.get_channel(caution_Channel)
-    embed=discord.Embed(title= f":no_entry: 제재조치 : 차단",description=f"{user.id}", color="#ff0000")
+    print(channel)
+    embed=discord.Embed(title= f":no_entry: 제재조치 : 차단",description=f"{user.id}", color=0xe74c3c)
     embed.add_field(name="관리자", value=f"{admin.mention}", inline=True)
     embed.add_field(name="제재자", value=f"{user.mention}", inline=True)
     embed.add_field(name="제재사유", value=f"경고 누적 혹은 스팸, 악성유저로 서버에서 차단되었습니다.", inline=False)
@@ -284,7 +286,7 @@ async def 인증완료(ctx):
 
             url=bot.myGuild.icon_url
             index = emblem_Index.index(solo_tier)
-            embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xf3bb76)
+            embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xe74c3c)
             embed.set_thumbnail(url=url)
             embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {member.mention}\n소환사명: {summoner_name}", inline=False)
             embed.add_field(name=":medal: **티어 정보**", value=f"현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
@@ -429,6 +431,32 @@ async def 스트리머해제(ctx,streamer: discord.Member):
             log.logger.info(f"C: 스트리머해제 S: 완료 W: {ctx.author.name} T: {streamer}")
     else:
         pass
+
+@bot.command()
+async def 파티(ctx,*,party_name):
+    await ctx.message.delete()
+    member = ctx.message.author
+    log.logger.info(f"C: 파티 S: 시작 W: {member.name}")
+    try:
+        party_info = db.get_partyInfo(party_name)
+        party_role = get(ctx.guild.roles,name=f"{party_info[2]}")
+        party_leader = ctx.guild.get_member(int(party_info[1]))
+        party_members = party_role.members
+        print(party_leader)
+    except Exception as ex:
+        log.logger.error(f"C: 파티 S: 에러 {ex}")
+        return await ctx.send(f"**{party_name}** 이름을 가진 파티가 없습니다.")
+    else:
+        embed=discord.Embed(title= f":tada: {party_name}", description=f"{party_info[3]}", color=party_role.color)
+        embed.add_field(name=f":man_mage: 파티장", value=f"{party_leader}", inline=True)
+        embed.add_field(name=f":clock3: 활동시간", value=f"{party_info[4]}", inline=True)
+        embed.add_field(name=f":dizzy: 티어대", value=f"{party_info[5]}", inline=True)
+        embed.add_field(name=f":crossed_swords: 파티유형", value=f"{party_info[6]}", inline=False)
+        embed.add_field(name=f":family_mmbb: 파티인원({len(party_members)}/10)", value=f" / ".join(map(str,party_members)))
+        embed.set_footer(text=footer)
+        await ctx.message.author.send(embed=embed)
+
+
 @bot.command()
 async def 파티목록(ctx):
     await ctx.message.delete()
@@ -443,6 +471,7 @@ async def 파티목록(ctx):
         party_tier = party[5]
         party_type = party[6]
         embed.add_field(name=f":tada: **{party_name}**", value=f"파티장 : {party_leader}\n시간대: {party_time}\n티어대: {party_tier}\n유형: {party_type}", inline=False)
+    embed.set_footer(text=footer)
     await ctx.message.author.send(embed=embed)
 
 @bot.command()
@@ -484,12 +513,18 @@ async def 파티가입(ctx,member:discord.Member):
     if check(ctx,'leader'):
         log.logger.info(f"C: 파티가입 S: 시작 W: {leader.name}")
         try:
-            party_name = db.get_party(leader_id)
-            role = get(ctx.guild.roles,name=party_name)
+            if get(member.roles,name="인증")==None:
+                return await ctx.send("해당 유저는 인증 되지 않았습니다.")
+            else:
+                party_name = db.get_party(leader_id)
+                role = get(ctx.guild.roles,name=party_name)
+                if len(role.members) > 10:
+                    return await ctx.send("파티에 최대 인원은 **10명** 입니다.")
+                else:
+                    db.set_partymemeber(party_name,member.id)
         except Exception as ex:
             log.logger.error(f"C: 파티가입 S: 실패 R: {ex}")
             return await ctx.send("파티가입에 실패했습니다.")
-            
         else:
             await member.add_roles(role)
             await ctx.send(f"{member.mention}님이 **{party_name}**에 가입되셨습니다.")
@@ -512,11 +547,13 @@ async def 파티탈퇴(ctx,member:discord.Member=None):
                 await ctx.send(f"{leader}는 파티를 탈퇴 할 수 없습니다. 필요하신 사항은 관리자에게 문의해주세요.")
                 log.logger.info(f"C: 파티탈퇴 S: 실패 W: {leader.name} R: 파티장은 탈퇴 불가")
             else:
+                db.del_partymember(member.id)
                 await member.remove_roles(role)
                 await ctx.send(f"{member.mention}님을 파티에서 추방했습니다.")
                 log.logger.info(f"C: 파티탈퇴 S: 성공 W: {leader.name} R: 파티에서 {member.name} 추방")
         else:
             if member == None:
+                db.del_partymember(leader_id)
                 await leader.remove_roles(role)
                 await ctx.send(f"{member.mention}님을 파티에서 탈퇴했습니다.")
                 log.logger.info(f"C: 파티탈퇴 S: 성공 W: {leader.name} R: 파티에서 탈퇴")
@@ -583,6 +620,7 @@ async def 경고(ctx,member:discord.Member,*,reason):
         embed.add_field(name="관리자", value=f"{admin.mention}", inline=True)
         embed.add_field(name="제재자", value=f"{member.mention}", inline=True)
         embed.add_field(name="제재사유", value=f"{reason}", inline=False)
+        embed.set_footer(text=footer)
         await channel.send(embed=embed)
         if role.name == "차단":
             await admin.send("해당 유저를 차단해주세요.")
@@ -619,6 +657,7 @@ async def 내전(ctx):
         embed.add_field(name=f"🔥TEAM. {team_num}", value=",".join(map(str,member_mention)), inline=False)
         team_num = team_num+1
         member_mention.clear()
+    embed.set_footer(text=footer)
     await text_Channel.send(embed=embed)
 
 @bot.command()
@@ -648,6 +687,7 @@ async def 명예의전당(ctx):
     embed.add_field(name=":star: 팀장", value=f"**{leader}**", inline=False)
     embed.add_field(name=":family_mmbb: 팀원", value=f"**{member1}\n{member2}\n{member3}\n{mvp}**", inline=False)
     embed.add_field(name=":medal: MVP", value=f"**{mvp}**", inline=False)
+    embed.set_footer(text=footer)
     await ctx.send(embed=embed)
 
 @bot.command()
@@ -688,4 +728,4 @@ async def 소환사(ctx,*,lolname):
         await ctx.send(embed=embed)
 
 
-bot.run(token[0])
+bot.run(token[1])

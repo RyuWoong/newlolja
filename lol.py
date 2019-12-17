@@ -91,7 +91,7 @@ def get_summoner_league(summoner_id):
 
 def get_account_match(account_id):
     api_key = fc.GET_KEY("lol.txt")
-    URL = f"{default_URL}/lol/match/v4/matchlists/by-account/{account_Id}"
+    URL = f"{default_URL}/lol/match/v4/matchlists/by-account/{account_id}"
     Header = Headers(api_key[0])
     res = requests.get(url=URL,headers=Header)
     if(res.status_code) == 200:
