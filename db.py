@@ -181,6 +181,19 @@ def get_partyInfo(party_name):
         conn.close()
         return rows if len(rows) > 0 else None
 
+def set_partydec(leader_id,dec):
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"UPDATE party SET party_dec = '{dec}' WHERE discord_id='{leader_id}'"
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+
 
 def set_member(discord_id,discord_name,summoner_id):
     today = datetime.datetime.now()

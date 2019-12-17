@@ -177,12 +177,14 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!파티탈퇴", value="파티에서 탈퇴합니다. 파티장인 경우 관리자에게 문의해주세요.", inline=False)
         embed.add_field(name="!!파티탈퇴 '@유저'", value="파티장) 파티에서 추방합니다. ", inline=False)
         embed.add_field(name="!!파티목록", value="서버내 파티 목록을 보여줍니다. ", inline=False)
-        #embed.add_field(name="!!파티정보 '팀명'", value="해당 파티정보와 파티원들을 소개합니다.", inline=False)
-        #embed.add_field(name="!!파티소개 '소개글'", value="파티장 -> 파티정보에 보여질 소개글을 작성합니다. (100자 이내)", inline=False)
+        embed.add_field(name="!!파티 '팀명'", value="해당 파티정보와 파티원들을 소개합니다.", inline=False)
+        embed.add_field(name="!!파티소개 '소개글'", value="파티장) 파티정보에 보여질 소개글을 작성합니다.", inline=False)
     elif (detail == "관리자"):
+        embed.add_field(name="!!경고 '@유저'", value="해당 유저에게 경고를 부여합니다. 경고 3번시 차단을 부여합니다.", inline=False)
         embed.add_field(name="!!파티등록 '@팀명' '@유저'", value="파티를 생성하며, 파티장을 선정합니다.\n사전에 해당 팀의 역할 추가 및 역할멘션을 허용해주세요.", inline=False)
         embed.add_field(name="!!경기등록 '@팀명' '@팀명' '설명'", value="경기일정을 추가합니다. 설정된 경기는 리그일정으로 볼 수 있습니다.", inline=False)
         embed.add_field(name="!!경기결과 '매치업번호' '@팀명'", value="경기 결과 등록 및 승점 반영. 승자를 입력해주시고,무승부라면 @팀명에 무승부를 입력.", inline=False)
+
     elif (detail == "인증"):
         embed.add_field(name="!!인증시작 '소환사명'", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.1", inline=False)
         embed.add_field(name="!!인증완료", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.2", inline=False)
@@ -560,6 +562,25 @@ async def 파티탈퇴(ctx,member:discord.Member=None):
             else:
                 await ctx.send(f"{leader.mention}님은 권한이 없습니다.")
                 log.logger.info(f"C: 파티탈퇴 S: 실패 W: {leader.name} R: 파티장이 아님")
+
+@bot.command()
+async def 파티편집(ctx,*,dec):
+    await ctx.message.delete()
+    leader = ctx.message.author
+    log.logger.info(f"C: 파티편집 S: 시작 W: {leader}")
+    if check(ctx,"leader"):
+        try:
+            db.set_partydec(leader.id,dec)
+            
+        except Exception as ex:
+            log.logger.error(f"C: 파티편집 S: 실패 R: {ex}")
+            await ctx.send("파티 소개글 변경을 실패하였습니다.")
+        else:
+            await ctx.send("파티 소개글 변경을 완료했습니다.")
+            log.logger.error(f"C: 파티편집 S: 완료")
+    else:
+        pass
+
 
 @bot.command()
 async def 공지(ctx):
