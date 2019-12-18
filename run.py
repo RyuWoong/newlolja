@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -54,6 +54,17 @@ def check(ctx,type):
         if auth != None:
             check = True
             return check
+    elif type == "teacher":
+        teacher = get(member.roles,name="선생님")
+        if teacher != None:
+            check = True
+            return check
+    elif type == "student":
+        student = get(member.roles,name="학생")
+        if student != None:
+            check = True
+            return check
+
 ## Start Bot ##
 @bot.event
 async def on_ready():
@@ -106,6 +117,7 @@ async def on_voice_state_update(member,before,after):
             print(now_channel.id,type(now_channel.id))
             print(now_channel.id == 654500798281023493)
             if now_channel.id in myVoiceChannels:
+                embed=discord.Embed(title= f":video_game: 게임 개설!", description=f"아래 초대코드를 사용해서 유저들을 모아보세요!", color=0xf3bb76)
                 if now_channel.id == 654500798281023493 :
                     log.logger.info(f"C : {member} F : StartGame Normal Game")
                     category = now_channel.category
@@ -116,7 +128,10 @@ async def on_voice_state_update(member,before,after):
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(normal_Channel)
                     await member.move_to(new_channel)
-                    await channel.send(f"{member.mention}\n{invite.url} ```일반 게임방이 생성 되었습니다.\n초대코드를 사용하여 유저를 모아보세요!```")
+                    embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
+                    embed.add_field(name=":crossed_swords: 게임방식",value=f"일반게임",inline=True)
+                    embed.add_field(name=":love_letter: 초대코드", value=f"{invite.url}", inline=False)
+                    await channel.send(embed=embed)
 
                 elif now_channel.id == 654493633608810527 :
                     log.logger.info(f"C : {member} F : StartGame LOLChess")
@@ -128,7 +143,10 @@ async def on_voice_state_update(member,before,after):
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(chess_Channel)
                     await member.move_to(new_channel)
-                    await channel.send(f"{member.mention}\n{invite.url} ```롤토체스 방이 생성 되었습니다.\n초대코드를 사용하여 유저를 모아보세요!```")
+                    embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
+                    embed.add_field(name=":crossed_swords: 게임방식",value=f"전략적 팀 전투",inline=True)
+                    embed.add_field(name=":love_letter: 초대코드", value=f"{invite.url}", inline=False)
+                    await channel.send(embed=embed)
 
                 elif now_channel.id == 654493745554784276 :
                     log.logger.info(f"C : {member} F : StartGame Duo Rank")
@@ -140,7 +158,10 @@ async def on_voice_state_update(member,before,after):
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
-                    await channel.send(f"{member.mention}\n{invite.url} ```듀오 랭크방이 생성 되었습니다.\n초대코드를 사용하여 유저를 모아보세요!```")
+                    embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
+                    embed.add_field(name=":crossed_swords: 게임방식",value=f"솔로/듀오 랭크",inline=True)
+                    embed.add_field(name=":love_letter: 초대코드", value=f"{invite.url}", inline=False)
+                    await channel.send(embed=embed)
 
                 elif now_channel.id == 654493812860780544  :
                     log.logger.info(f"C : {member} F : StartGame Free Rank")
@@ -152,7 +173,10 @@ async def on_voice_state_update(member,before,after):
                     invite = await new_channel.create_invite(max_age=360)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
-                    await channel.send(f"{member.mention}\n{invite.url} ```자유 랭크방이 생성 되었습니다.\n초대코드를 사용하여 유저를 모아보세요!```")
+                    embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
+                    embed.add_field(name=":crossed_swords: 게임방식",value=f"자유 랭크",inline=True)
+                    embed.add_field(name=":love_letter: 초대코드", value=f"{invite.url}", inline=False)
+                    await channel.send(embed=embed)
             else:
                 pass
 
@@ -583,6 +607,102 @@ async def 파티편집(ctx,*,dec):
 
 
 @bot.command()
+async def 롤아카데미(ctx):
+    await ctx.message.delete()
+
+@bot.command()
+async def 선생님등록(ctx,member:discord.Member,line,*,dec):
+    await ctx.message.delete()
+    if check(ctx,"admin"):
+        log.logger.error(f"C: 선생님등록 S: 시작")
+        role = get(member.roles,name="인증")
+        if role != None:
+            role = get(ctx.guild.roles,name="선생님")
+            try:
+                db.set_teacher(member.id,member.name,line,dec)
+                await member.add_roles(role)
+            except Exception as ex:
+                log.logger.error(f"C: 선생님등록 S: 실패 R: {ex}")
+            else:
+                print("완료")
+                await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다.\n이제 학생을 받고 가르칠 수 있습니다.")
+                log.logger.error(f"C: 선생님등록 S: 완료 T: {member}")
+        else:
+            await ctx.send(f"{member}는 인증된 유저가 아닙니다.")
+            log.logger.error(f"C: 선생님등록 S: 실패 R: 인증된 유저가 아님")
+    else:
+        pass
+
+
+
+@bot.command()
+async def 선생님(ctx):
+    await ctx.message.delete()
+    try:
+        teachers = db.get_teacher()
+    except Exception as ex:
+        log.logger.error(f"C: 선생님 S: 실패 R: {ex}")
+    else:
+        embed=discord.Embed(title= f":man_teacher: 선생님 목록", description=f"입학을 원하시는 분은 마음에 드는 선생님께 문의하세요.", color=0xf3bb76)
+        for teacher in teachers:
+            discord_id = teacher[0]
+            _discord = ctx.guild.get_member(int(discord_id))
+            line = teacher[2]
+            dec = teacher[3]
+            embed.add_field(name=f"{_discord} 선생님", value=f"Line. {line}\n:speech_left: {dec}", inline=False)
+        embed.set_footer(text="롤 아카데미 | 2019.12.19")
+        await ctx.message.author.send(embed=embed)
+        log.logger.info(f"C: 선생님 S: 완료 W: {ctx.message.author}")
+
+@bot.command()
+async def 입학(ctx,member:discord.Member):
+    await ctx.message.delete()
+    if check(ctx,"teacher"):
+        role = get(member.roles,name="인증")
+        if role != None:
+            teacher = ctx.message.author
+            try:
+                db.set_student(member.id,teacher.id)
+            except Exception as ex:
+                log.logger.error(ex)
+            else:
+                role = get(ctx.guild.roles,name="학생")
+                await member.add_roles(role)
+                await ctx.send(f"{member.mention}님이 {teacher.mention}님의 학생이 되셨습니다.")
+    else:
+        pass
+            
+
+@bot.command()
+async def 퇴학(ctx):
+    await ctx.message.delete()
+    if check(ctx,"student"):
+        member = ctx.message.author
+        try:
+            db.del_student(member.id)
+        except Exception as ex:
+            log.logger.error(ex)
+        else:
+            role = get(ctx.guild.roles,name="학생")
+            await member.remove_roles(role)
+            await ctx.send(f"{member.mention}님이 퇴학하셨습니다.")
+
+@bot.command()
+async def 졸업(ctx,member:discord.Member):
+    await ctx.message.delete()
+    if check(ctx,"teacher"):
+        teacher = ctx.message.author
+        role = get(member.roles,name="학생")
+        if role != None:
+            try:
+                db.del_student(member.id)
+            except Exception as ex:
+                log.logger.error(ex)
+            else:
+                await member.remove_roles(role)
+                await ctx.send(f"{member.mention}님이 졸업하였습니다.")
+
+@bot.command()
 async def 공지(ctx):
     log.logger.info(f"C: 공지 S: 시작 W: {ctx.message.author}")
     try:
@@ -749,4 +869,4 @@ async def 소환사(ctx,*,lolname):
         await ctx.send(embed=embed)
 
 
-bot.run(token[0])
+bot.run(token[1])

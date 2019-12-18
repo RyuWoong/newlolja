@@ -218,7 +218,6 @@ def get_member(discord_id):
         sql = f"SELECT * FROM member WHERE discord_id = '{discord_id}'"
         cursor.execute(sql)
         rows = cursor.fetchone()
-        conn.commit()
     except Exception as ex:
         call_error(ex)
     finally:
@@ -251,7 +250,6 @@ def get_notice():
         sql = f"SELECT * FROM server"
         cursor.execute(sql)
         rows = cursor.fetchone()
-        conn.commit()
     except Exception as ex:
         call_error(ex)
     finally:
@@ -267,6 +265,72 @@ def set_notice(notice):
         conn = open(db_id,db_pw)
         cursor = conn.cursor()
         sql = f"UPDATE server SET notice='{notice}', date='{now}' WHERE no = 1"
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_teacher():
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"SELECT * FROM academy"
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+        return rows if len(rows) > 0 else None
+
+def set_teacher(discord_id,discord_name,line,dec):
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"INSERT INTO academy (discord_id,discord_name,teacher_line,teacher_dec) VALUES('{discord_id}','{discord_name}','{line}','{dec}') ON DUPLICATE KEY UPDATE teacher_line = '{line}', teacher_dec = '{dec}'"
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+
+def del_teacher(discord_id):
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"DELETE FROM academy WHERE discord_id='{discord_id}'"
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+
+def set_student(discord_id,teacher_id):
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"UPDATE member set teacher_id='{teacher_id}' WHERE discord_id='{discord_id}'"
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+
+def del_student(discord_id):
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"UPDATE member set teacher_id = NULL WHERE discord_id='{discord_id}'"
         cursor.execute(sql)
         conn.commit()
     except Exception as ex:
