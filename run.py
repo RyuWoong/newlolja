@@ -203,12 +203,16 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!파티탈퇴 '@유저'", value="파티장) 파티에서 추방합니다. ", inline=False)
         embed.add_field(name="!!파티목록", value="서버내 파티 목록을 보여줍니다. ", inline=False)
         embed.add_field(name="!!파티 '팀명'", value="해당 파티정보와 파티원들을 소개합니다.", inline=False)
-        embed.add_field(name="!!파티소개 '소개글'", value="파티장) 파티정보에 보여질 소개글을 작성합니다.", inline=False)
+        embed.add_field(name="!!파티편집 '소개글'", value="파티장) 파티정보에 보여질 소개글을 작성합니다.", inline=False)
     elif (detail == "관리자"):
         embed.add_field(name="!!경고 '@유저'", value="해당 유저에게 경고를 부여합니다. 경고 3번시 차단을 부여합니다.", inline=False)
         embed.add_field(name="!!파티등록 '@팀명' '@유저'", value="파티를 생성하며, 파티장을 선정합니다.\n사전에 해당 팀의 역할 추가 및 역할멘션을 허용해주세요.", inline=False)
         embed.add_field(name="!!경기등록 '@팀명' '@팀명' '설명'", value="경기일정을 추가합니다. 설정된 경기는 리그일정으로 볼 수 있습니다.", inline=False)
         embed.add_field(name="!!경기결과 '매치업번호' '@팀명'", value="경기 결과 등록 및 승점 반영. 승자를 입력해주시고,무승부라면 @팀명에 무승부를 입력.", inline=False)
+    elif (detail =="아카데미"):
+        embed.add_field(name="!!선생님", value="아카데미에서 가르치는 선생님 목록을 보여줍니다.", inline=False)
+        embed.add_field(name="!!입학 '@유저'", value="선생님)유저를 명령어를 호출한 선생님의 학생으로 등록합니다.", inline=False)
+        embed.add_field(name="!!퇴학", value="학생에서 탈퇴합니다.", inline=False)
 
     elif (detail == "인증"):
         embed.add_field(name="!!인증시작 '소환사명'", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.1", inline=False)
@@ -220,10 +224,13 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!뽑기 '최대 값(숫자)'", value="1~최대 값까지 숫자 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!스트리머", value="해당 서버에 소속된 스트리머를 표시합니다.", inline=False)
         embed.add_field(name="!!소환사 '소환사명'", value="해당 소환사의 정보를 표시합니다.", inline=False)
+        embed.add_field(name="!!명예의전당", value="롤파티 리그 우승팀을 소개합니다.", inline=False)
+        embed.add_field(name="!!내전", value="내전 대기실에 있는 인원을 자동으로 팀을 편성해줍니다.", inline=False)
     else:
         embed.add_field(name="!!도움말 일반", value="일반 및 유틸 명령어을 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 파티", value="파티와 관련된 명령어를 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 인증", value="인증과 관련된 명령어를 보여줍니다.", inline=False)
+        embed.add_field(name="!!도움말 아카데미", value="인증과 관련된 명령어를 보여줍니다.", inline=False)
     embed.set_footer(text=footer)
     await ctx.message.author.send(embed=embed)
 
@@ -252,7 +259,7 @@ async def 인증시작(ctx,*,summoner=""):
         embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증", description=f"대표하는 소환사 계정을 인증합니다.", color=0xf3bb76)
         embed.set_thumbnail(url=bot.myGuild.icon_url)
         embed.add_field(name=":pencil2: 인증번호", value=f"{discord_id}", inline=False)
-        embed.add_field(name=":bangbang: 주의사항", value=f"클라이언트에서 반드시 동의 버튼을 눌러야합니다. 완료되면 인증채널에서 '!!인증완료' 명령어를 입력해주세요.", inline=False)
+        embed.add_field(name=":bangbang: 주의사항", value=f"클라이언트에서 반드시 동의 버튼을 눌러야합니다. 이후 인증채널에서 '!!인증완료' 명령어를 입력해주세요.", inline=False)
         embed.set_image(url="https://i.imgur.com/XQFFBm1.png")
         embed.set_footer(text=footer)
         await member.send(embed=embed)
@@ -627,7 +634,7 @@ async def 교직이수(ctx,member:discord.Member,line,*,dec):
                 log.logger.error(f"C: 교직이수 S: 실패 R: {ex}")
             else:
                 print("완료")
-                await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다.\n이제 학생을 받고 가르칠 수 있습니다.")
+                await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다.\n이제 학생을 받고 가르칠 수 있습니다. 롤자명령어를 확인해주세요.")
                 log.logger.error(f"C: 교직이수 S: 완료 T: {member}")
         else:
             await member.send(f"{member}는 인증된 유저가 아닙니다.")
