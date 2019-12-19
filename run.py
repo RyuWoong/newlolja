@@ -20,6 +20,7 @@ waiting_Channel = 654825518461354004
 team_category = 376628550041731072
 caution_Channel = 506395577815138304
 civilwar_Channel = 654952875583209502
+academy_Channel = 657017538965667867
 emoji_url = "https://cdn.discordapp.com/emojis/"
 emblem_Id = [654644195260366848,654644204978307072,654644217284526091,654644225706557470,654644237278773258,654644245277442048,654644294019448832,654644301975912479,654644310054273036]
 emblem_Index = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","DIAMOND","MASTER","GRANDMASTER","CHALLENGER"]
@@ -611,10 +612,10 @@ async def 롤아카데미(ctx):
     await ctx.message.delete()
 
 @bot.command()
-async def 선생님등록(ctx,member:discord.Member,line,*,dec):
+async def 교직이수(ctx,member:discord.Member,line,*,dec):
     await ctx.message.delete()
     if check(ctx,"admin"):
-        log.logger.error(f"C: 선생님등록 S: 시작")
+        log.logger.error(f"C: 교직이수 S: 시작")
         role = get(member.roles,name="인증")
         if role != None:
             role = get(ctx.guild.roles,name="선생님")
@@ -622,14 +623,14 @@ async def 선생님등록(ctx,member:discord.Member,line,*,dec):
                 db.set_teacher(member.id,member.name,line,dec)
                 await member.add_roles(role)
             except Exception as ex:
-                log.logger.error(f"C: 선생님등록 S: 실패 R: {ex}")
+                log.logger.error(f"C: 교직이수 S: 실패 R: {ex}")
             else:
                 print("완료")
                 await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다.\n이제 학생을 받고 가르칠 수 있습니다.")
-                log.logger.error(f"C: 선생님등록 S: 완료 T: {member}")
+                log.logger.error(f"C: 교직이수 S: 완료 T: {member}")
         else:
-            await ctx.send(f"{member}는 인증된 유저가 아닙니다.")
-            log.logger.error(f"C: 선생님등록 S: 실패 R: 인증된 유저가 아님")
+            await member.send(f"{member}는 인증된 유저가 아닙니다.")
+            log.logger.error(f"C: 교직이수 S: 실패 R: 인증된 유저가 아님")
     else:
         pass
 
@@ -661,14 +662,25 @@ async def 입학(ctx,member:discord.Member):
         role = get(member.roles,name="인증")
         if role != None:
             teacher = ctx.message.author
+            Channel = ctx.guild.get_channel(academy_Channel)
             try:
                 db.set_student(member.id,teacher.id)
+                member_info = db.get_member(member.id)
+                tier = member_info[6]
+                summoner_id = member_info[5]
+                summoner_name = lol.get_summoner_name(summoner_id)
             except Exception as ex:
                 log.logger.error(ex)
             else:
                 role = get(ctx.guild.roles,name="학생")
                 await member.add_roles(role)
-                await ctx.send(f"{member.mention}님이 {teacher.mention}님의 학생이 되셨습니다.")
+                embed=discord.Embed(title= f":receipt: 입학증서",description=f"LOL Academy 입학을 환영합니다.", color=0xf3bb76)
+                embed.add_field(name=":man_student: 학생이름", value=f"{member.mention}", inline=True)
+                embed.add_field(name=":label: 소환사명", value=f"{summoner_name}", inline=True)
+                embed.add_field(name=":star: 티어", value=f"{tier}", inline=False)
+                embed.add_field(name=":man_mage: 선생님", value=f"{teacher.mention}", inline=False)
+                embed.set_footer(text="LOL Academy | 개교. 2019.12.19")
+                await Channel.send(embed=embed)
     else:
         pass
             
@@ -678,6 +690,7 @@ async def 퇴학(ctx):
     await ctx.message.delete()
     if check(ctx,"student"):
         member = ctx.message.author
+        Channel = ctx.guild.get_channel(academy_Channel)
         try:
             db.del_student(member.id)
         except Exception as ex:
@@ -685,13 +698,14 @@ async def 퇴학(ctx):
         else:
             role = get(ctx.guild.roles,name="학생")
             await member.remove_roles(role)
-            await ctx.send(f"{member.mention}님이 퇴학하셨습니다.")
+            await Channel.send(f"{member.mention}님이 퇴학하셨습니다.")
 
 @bot.command()
 async def 졸업(ctx,member:discord.Member):
     await ctx.message.delete()
     if check(ctx,"teacher"):
         teacher = ctx.message.author
+        Channel = ctx.guild.get_channel(academy_Channel)
         role = get(member.roles,name="학생")
         if role != None:
             try:
@@ -700,7 +714,13 @@ async def 졸업(ctx,member:discord.Member):
                 log.logger.error(ex)
             else:
                 await member.remove_roles(role)
-                await ctx.send(f"{member.mention}님이 졸업하였습니다.")
+                embed=discord.Embed(title= f":military_medal:  졸업증서",description=f"LOL Academy 졸업을 축하합니다.", color=0xf3bb76)
+                embed.add_field(name=":man_student: 학생이름", value=f"{member.mention}", inline=True)
+                embed.add_field(name=":label: 소환사명", value=f"{summoner_name}", inline=True)
+                embed.add_field(name=":star: 티어", value=f"{tier}", inline=False)
+                embed.add_field(name=":man_mage: 선생님", value=f"{teacher.mention}", inline=False)
+                embed.set_footer(text="LOL Academy | 개교. 2019.12.19")
+                await Channel.send(embed=embed)
 
 @bot.command()
 async def 공지(ctx):
