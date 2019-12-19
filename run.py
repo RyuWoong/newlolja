@@ -252,6 +252,7 @@ async def 인증시작(ctx,*,summoner=""):
         embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증", description=f"대표하는 소환사 계정을 인증합니다.", color=0xf3bb76)
         embed.set_thumbnail(url=bot.myGuild.icon_url)
         embed.add_field(name=":pencil2: 인증번호", value=f"{discord_id}", inline=False)
+        embed.add_field(name=":bangbang: 주의사항", value=f"클라이언트에서 반드시 동의 버튼을 눌러야합니다. 완료되면 인증채널에서 '!!인증완료' 명령어를 입력해주세요.", inline=False)
         embed.set_image(url="https://i.imgur.com/XQFFBm1.png")
         embed.set_footer(text=footer)
         await member.send(embed=embed)
@@ -703,13 +704,17 @@ async def 퇴학(ctx):
 @bot.command()
 async def 졸업(ctx,member:discord.Member):
     await ctx.message.delete()
-    if check(ctx,"teacher"):
+    if check(ctx,"admin"):
         teacher = ctx.message.author
         Channel = ctx.guild.get_channel(academy_Channel)
         role = get(member.roles,name="학생")
         if role != None:
             try:
                 db.del_student(member.id)
+                member_info = db.get_member(member.id)
+                tier = member_info[6]
+                summoner_id = member_info[5]
+                summoner_name = lol.get_summoner_name(summoner_id)
             except Exception as ex:
                 log.logger.error(ex)
             else:
