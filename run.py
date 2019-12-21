@@ -326,6 +326,7 @@ async def 인증완료(ctx):
             embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {member.mention}\n소환사명: {summoner_name}", inline=False)
             embed.add_field(name=":medal: **티어 정보**", value=f"현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
             await channel.send(embed=embed)
+            await ctx.send(f":white_check_mark: {member.mention}님 소환사 인증이 완료되었습니다.")
         else:
             await ctx.send(f"{member.mention}\n:red_square: **인증번호**가 일치하지 않습니다. :sweat:")
             log.logger.info(f"C: 인증확인결과 S: 실패 W: {member.name} ID: {discord_id} KEY : {auth}")
@@ -337,6 +338,7 @@ async def 티어갱신(ctx):
         log.logger.info(f"C: 티어갱신 S: 시작 W: {ctx.author.name}")
         member = ctx.message.author
         discord_id = member.id
+        channel = ctx.guild.get_channel(654855564521897984)
         try:
             member_info = db.get_member(discord_id)
             summoner_id = member_info[5]
@@ -378,7 +380,8 @@ async def 티어갱신(ctx):
                 embed.set_thumbnail(url=url)
                 embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {member.mention}\n 소환사명: {summoner_name}", inline=False)
                 embed.add_field(name=":medal: **티어 정보**", value=f"이전티어: <:LOLPARTY:{emblem_Id[bindex]}> {get_lasttier}\n현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
-                await ctx.send(embed=embed)
+                await channel.send(embed=embed)
+                await ctx.send(f":white_check_mark: {member.mention}님 티어갱신이 완료 되었습니다.")
                 
             else:
                 tier_role = get(ctx.guild.roles,name=f"UNRANKED")
@@ -548,6 +551,9 @@ async def 파티가입(ctx,member:discord.Member):
     if check(ctx,'leader'):
         log.logger.info(f"C: 파티가입 S: 시작 W: {leader.name}")
         try:
+            party = db.get.member(member.id)
+            if party[7] == None:
+                return await ctx.send("해당 유저는 이미 파티가 있습니다.")
             if get(member.roles,name="인증")==None:
                 return await ctx.send("해당 유저는 인증 되지 않았습니다.")
             else:
