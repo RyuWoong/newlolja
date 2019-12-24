@@ -24,6 +24,7 @@ academy_Channel = 657017538965667867
 emoji_url = "https://cdn.discordapp.com/emojis/"
 emblem_Id = [654644195260366848,654644204978307072,654644217284526091,654644225706557470,654644237278773258,654644245277442048,654644294019448832,654644301975912479,654644310054273036]
 emblem_Index = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","DIAMOND","MASTER","GRANDMASTER","CHALLENGER"]
+winners = [248123112472838144,338203400271560704,275126185745186816,614752807639187475,244372339930693632]
 
 
 ## Default Function ##
@@ -915,6 +916,7 @@ async def 소환사(ctx,*,lolname):
 
 @bot.command()
 async def 내정보(ctx):
+    await ctx.message.delete()
     member = ctx.message.author
     member_info = db.get_member(member.id)
     if member_info == None:
@@ -925,6 +927,7 @@ async def 내정보(ctx):
         yaer = member.joined_at.year
         month = member.joined_at.month
         day = member.joined_at.day
+        summoner_name = lol.get_summoner_name(member_info[5])
         embed=discord.Embed(title= f"LOL Party :: {member}님",description=f"서버 가입일. **{yaer}-{month}-{day}**", color=0xf3bb76)
         embed.set_thumbnail(url=f"{member.avatar_url}")
         embed.add_field(name="닉네임", value=f"{member.display_name}",inline=True)
@@ -932,7 +935,10 @@ async def 내정보(ctx):
             embed.add_field(name="소속된 파티", value="없음",inline=True)
         else:
             embed.add_field(name="소속된 파티", value=f"{member_info[7]}",inline=True)
-        embed.add_field(name="랭크 정보",value=f"<:LOLPARTY:{emblem_Id[index]}> {member_info[6]}",inline=False)
+        embed.add_field(name="소환사 명",value=f"{summoner_name}",inline=False)
+        embed.add_field(name="랭크 정보",value=f"<:LOLPARTY:{emblem_Id[index]}> {member_info[6]}",inline=True)
+        if member.id in winners:
+            embed.set_image(url="https://media.discordapp.net/attachments/624997033362849827/654935380738703361/Sparkle.gif")
         await ctx.send(embed=embed)
 
 bot.run(token[0])
