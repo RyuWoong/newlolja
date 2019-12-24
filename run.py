@@ -1,4 +1,4 @@
-import asyncio,discord,os,random,threading,log,lol,myfunction,db,sys
+import asyncio,discord,os,random,threading,log,lol,myfunction,db,sys,time
 from discord.ext import commands
 from discord.utils import get
 
@@ -643,7 +643,7 @@ async def 교직이수(ctx,member:discord.Member,line,*,dec):
                 await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다.\n이제 학생을 받고 가르칠 수 있습니다. 롤자명령어를 확인해주세요.")
                 log.logger.error(f"C: 교직이수 S: 완료 T: {member}")
         else:
-            await member.send(f"{member}는 인증된 유저가 아닙니다.")
+            await ctx.author.send(f"{member}는 인증된 유저가 아닙니다.")
             log.logger.error(f"C: 교직이수 S: 실패 R: 인증된 유저가 아님")
     else:
         pass
@@ -695,24 +695,31 @@ async def 입학(ctx,member:discord.Member):
                 embed.add_field(name=":man_mage: 선생님", value=f"{teacher.mention}", inline=False)
                 embed.set_footer(text="LOL Academy | 개교. 2019.12.19")
                 await Channel.send(embed=embed)
+        else:
+            await ctx.message.author.send(f"{member}는 인증되지 않았습니다.")
     else:
         pass
             
 
 @bot.command()
-async def 퇴학(ctx):
+async def 퇴학(ctx,member:discord.Member):
     await ctx.message.delete()
-    if check(ctx,"student"):
-        member = ctx.message.author
+    log.logger.info(f"C: 퇴학 S: 시작 W: {ctx.message.author}")
+    if check(ctx,"teacher"):
+        teacher = ctx.message.author
         Channel = ctx.guild.get_channel(academy_Channel)
-        try:
-            db.del_student(member.id)
-        except Exception as ex:
-            log.logger.error(ex)
-        else:
-            role = get(ctx.guild.roles,name="학생")
-            await member.remove_roles(role)
-            await Channel.send(f"{member.mention}님이 퇴학하셨습니다.")
+        teacher_id = db.find_teacher(member.id)
+        print(teacher_id)
+        if teacher_id == str(teacher.id):
+            try:
+                db.del_student(member.id)
+            except Exception as ex:
+                log.logger.error(ex)
+            else:
+                role = get(ctx.guild.roles,name="학생")
+                await member.remove_roles(role)
+                await Channel.send(f"{member.mention}님이 퇴학 처리되었습니다.")
+                log.logger.info(f"C: 퇴학 S: 완료 W: {ctx.message.author} T: {member}")
 
 @bot.command()
 async def 졸업(ctx,member:discord.Member):
@@ -906,5 +913,26 @@ async def 소환사(ctx,*,lolname):
         embed.set_footer(text=footer)
         await ctx.send(embed=embed)
 
+@bot.command()
+async def 내정보(ctx):
+    member = ctx.message.author
+    member_info = db.get_member(member.id)
+    if member_info == None:
+        await ctx.send("서버에 인증된 유저가 아닙니다. 우선 인증을 해주세요!")
+    else:
+        tier=member_info[6].split(" ")
+        index = emblem_Index.index(tier[0])
+        yaer = member.joined_at.year
+        month = member.joined_at.month
+        day = member.joined_at.day
+        embed=discord.Embed(title= f"LOL Party :: {member}님",description=f"서버 가입일. **{yaer}-{month}-{day}**", color=0xf3bb76)
+        embed.set_thumbnail(url=f"{member.avatar_url}")
+        embed.add_field(name="닉네임", value=f"{member.display_name}",inline=True)
+        if member_info[7] == None:
+            embed.add_field(name="소속된 파티", value="없음",inline=True)
+        else:
+            embed.add_field(name="소속된 파티", value=f"{member_info[7]}",inline=True)
+        embed.add_field(name="랭크 정보",value=f"<:LOLPARTY:{emblem_Id[index]}> {member_info[6]}",inline=False)
+        await ctx.send(embed=embed)
 
 bot.run(token[0])

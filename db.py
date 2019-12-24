@@ -300,6 +300,20 @@ def set_teacher(discord_id,discord_name,line,dec):
         cursor.close()
         conn.close()
 
+def find_teacher(discord_id):
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"SELECT teacher_id FROM member WHERE discord_id='{discord_id}' "
+        cursor.execute(sql)
+        rows = cursor.fetchone()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+        return rows[0] if len(rows) > 0 else None
+
 def del_teacher(discord_id):
     try:
         conn = open(db_id,db_pw)
