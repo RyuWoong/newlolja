@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -375,12 +375,16 @@ async def 티어갱신(ctx):
                 tier_role = get(ctx.guild.roles,name=f"{solo_tier}")
                 await member.add_roles(tier_role)
                 db.renew(discord_id,f"{solo_tier} {solo_rank}")
-                bindex = emblem_Index.index(lasttier[0]) 
-                index = emblem_Index.index(solo_tier)
                 embed=discord.Embed(title= f":white_check_mark: LOL PARTY 티어 갱신", color=0xf3bb76)
                 embed.set_thumbnail(url=url)
                 embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {member.mention}\n 소환사명: {summoner_name}", inline=False)
-                embed.add_field(name=":medal: **티어 정보**", value=f"이전티어: <:LOLPARTY:{emblem_Id[bindex]}> {get_lasttier}\n현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
+                if lasttier[0] == "UNRANKED":
+                    index = emblem_Index.index(solo_tier)
+                    embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. UNRANKED\n현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
+                else:    
+                    bindex = emblem_Index.index(lasttier[0]) 
+                    index = emblem_Index.index(solo_tier)
+                    embed.add_field(name=":medal: **티어 정보**", value=f"이전티어: <:LOLPARTY:{emblem_Id[bindex]}> {get_lasttier}\n현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
                 await channel.send(embed=embed)
                 await ctx.send(f":white_check_mark: {member.mention}님 티어갱신이 완료 되었습니다.")
                 
@@ -392,7 +396,10 @@ async def 티어갱신(ctx):
                 embed=discord.Embed(title= f":white_check_mark: LOL PARTY 티어 갱신", color=0xf3bb76)
                 embed.set_thumbnail(url=url)
                 embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드. {member.mention}\n 소환사명. {summoner_name}", inline=False)
-                embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. <:LOLPARTY:{emblem_Id[index]}> {get_lasttier}\n현재티어. UNRANKED", inline=False)
+                if lasttier == "UNRANKED":
+                    embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. UNRANKED\n현재티어. UNRANKED", inline=False)
+                else:    
+                    embed.add_field(name=":medal: **티어 정보**", value=f"이전티어. <:LOLPARTY:{emblem_Id[index]}> {get_lasttier}\n현재티어. UNRANKED", inline=False)
                 await ctx.send(embed=embed)
             log.logger.info(f"C: 티어갱신 S: 완료 W: {member.name}")
             
@@ -944,4 +951,4 @@ async def 내정보(ctx):
             embed.set_image(url="https://media.discordapp.net/attachments/624997033362849827/654935380738703361/Sparkle.gif")
         await ctx.send(embed=embed)
 
-bot.run(token[0])
+bot.run(token[1])
