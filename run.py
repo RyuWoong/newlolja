@@ -922,8 +922,6 @@ async def 내정보(ctx):
     if member_info == None:
         await ctx.send("서버에 인증된 유저가 아닙니다. 우선 인증을 해주세요!")
     else:
-        tier=member_info[6].split(" ")
-        index = emblem_Index.index(tier[0])
         yaer = member.joined_at.year
         month = member.joined_at.month
         day = member.joined_at.day
@@ -936,7 +934,12 @@ async def 내정보(ctx):
         else:
             embed.add_field(name="소속된 파티", value=f"{member_info[7]}",inline=True)
         embed.add_field(name="소환사 명",value=f"{summoner_name}",inline=False)
-        embed.add_field(name="랭크 정보",value=f"<:LOLPARTY:{emblem_Id[index]}> {member_info[6]}",inline=True)
+        if member_info[6] == None:
+            embed.add_field(name="랭크 정보",value=f"UNRANKED",inline=True)
+        else:
+            tier=member_info[6].split(" ")
+            index = emblem_Index.index(tier[0])
+            embed.add_field(name="랭크 정보",value=f"<:LOLPARTY:{emblem_Id[index]}> {member_info[6]}",inline=True)
         if member.id in winners:
             embed.set_image(url="https://media.discordapp.net/attachments/624997033362849827/654935380738703361/Sparkle.gif")
         await ctx.send(embed=embed)
