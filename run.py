@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -560,7 +560,7 @@ async def 파티가입(ctx,member:discord.Member):
     if check(ctx,'leader'):
         log.logger.info(f"C: 파티가입 S: 시작 W: {leader.name}")
         try:
-            party = db.get.member(member.id)
+            party = db.get_member(member.id)
             if party[7] == None:
                 return await ctx.send("해당 유저는 이미 파티가 있습니다.")
             if get(member.roles,name="인증")==None:
@@ -700,7 +700,10 @@ async def 입학(ctx,member:discord.Member):
                 embed=discord.Embed(title= f":receipt: 입학증서",description=f"LOL Academy 입학을 환영합니다.", color=0xf3bb76)
                 embed.add_field(name=":man_student: 학생이름", value=f"{member.mention}", inline=True)
                 embed.add_field(name=":label: 소환사명", value=f"{summoner_name}", inline=True)
-                embed.add_field(name=":star: 티어", value=f"{tier}", inline=False)
+                if tier == None:
+                    embed.add_field(name=":star: 티어", value=f"UNRANKED", inline=False)
+                else:
+                    embed.add_field(name=":star: 티어", value=f"{tier}", inline=False)
                 embed.add_field(name=":man_mage: 선생님", value=f"{teacher.mention}", inline=False)
                 embed.set_footer(text="LOL Academy | 개교. 2019.12.19")
                 await Channel.send(embed=embed)
@@ -923,20 +926,16 @@ async def 소환사(ctx,*,lolname):
         await ctx.send(embed=embed)
 
 @bot.command()
-async def 내정보(ctx):
+async def 정보(ctx,member:discord.Member):
     await ctx.message.delete()
-    member = ctx.message.author
     member_info = db.get_member(member.id)
     if member_info == None:
-        await ctx.send("서버에 인증된 유저가 아닙니다. 우선 인증을 해주세요!")
+        await member.send("서버에서 인증된 유저가 아닙니다.")
     else:
-        yaer = member.joined_at.year
-        month = member.joined_at.month
-        day = member.joined_at.day
         summoner_name = lol.get_summoner_name(member_info[5])
-        embed=discord.Embed(title= f"LOL Party :: {member}님",description=f"서버 가입일. **{yaer}-{month}-{day}**", color=0xf3bb76)
+        embed=discord.Embed(title= f"{member}",description=f"서버 가입일. **{member.joined_at.year}-{member.joined_at.month}-{member.joined_at.day}**", color=0xf3bb76)
         embed.set_thumbnail(url=f"{member.avatar_url}")
-        embed.add_field(name="닉네임", value=f"{member.display_name}",inline=True)
+        embed.add_field(name="서버 별명", value=f"{member.display_name}",inline=True)
         if member_info[7] == None:
             embed.add_field(name="소속된 파티", value="없음",inline=True)
         else:
@@ -950,6 +949,7 @@ async def 내정보(ctx):
             embed.add_field(name="랭크 정보",value=f"<:LOLPARTY:{emblem_Id[index]}> {member_info[6]}",inline=True)
         if member.id in winners:
             embed.set_image(url="https://media.discordapp.net/attachments/624997033362849827/654935380738703361/Sparkle.gif")
+        embed.set_footer(text=f"{member.id}")
         await ctx.send(embed=embed)
 
-bot.run(token[0])
+bot.run(token[1])
