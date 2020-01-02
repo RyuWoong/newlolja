@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.OpenBeta")
-bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -185,10 +185,11 @@ async def on_voice_state_update(member,before,after):
 
 
 ## Discord Command ##
-# @bot.command()
-# async def 테스트(ctx):
-#     admin = get(ctx.guild.roles,name="관리자")
-#     await ctx.send(admin.mention)
+@bot.command()
+async def 아이디(ctx,mention:discord.Member):
+    await ctx.message.delete()
+    member_id =  mention.id
+    await ctx.message.author.send(mention,member_id)
 
 
 @bot.command()
@@ -951,4 +952,4 @@ async def 내정보(ctx):
             embed.set_image(url="https://media.discordapp.net/attachments/624997033362849827/654935380738703361/Sparkle.gif")
         await ctx.send(embed=embed)
 
-bot.run(token[1])
+bot.run(token[0])
