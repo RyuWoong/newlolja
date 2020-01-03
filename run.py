@@ -209,8 +209,7 @@ async def 도움말(ctx,detail=None):
     elif (detail == "관리자"):
         embed.add_field(name="!!경고 '@유저'", value="해당 유저에게 경고를 부여합니다. 경고 3번시 차단을 부여합니다.", inline=False)
         embed.add_field(name="!!파티등록 '@팀명' '@유저'", value="파티를 생성하며, 파티장을 선정합니다.\n사전에 해당 팀의 역할 추가 및 역할멘션을 허용해주세요.", inline=False)
-        embed.add_field(name="!!경기등록 '@팀명' '@팀명' '설명'", value="경기일정을 추가합니다. 설정된 경기는 리그일정으로 볼 수 있습니다.", inline=False)
-        embed.add_field(name="!!경기결과 '매치업번호' '@팀명'", value="경기 결과 등록 및 승점 반영. 승자를 입력해주시고,무승부라면 @팀명에 무승부를 입력.", inline=False)
+        embed.add_field(name="!!교직이수 '라인' '소개글'", value="선생님을 등록합니다. 라인Top,Jungle,Mid,Bot,Sup 소개글 띄워쓰기 가능", inline=False)
     elif (detail =="아카데미"):
         embed.add_field(name="!!선생님", value="아카데미에서 가르치는 선생님 목록을 보여줍니다.", inline=False)
         embed.add_field(name="!!입학 '@유저'", value="선생님)유저를 명령어를 호출한 선생님의 학생으로 등록합니다.", inline=False)
@@ -228,6 +227,7 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!소환사 '소환사명'", value="해당 소환사의 정보를 표시합니다.", inline=False)
         embed.add_field(name="!!명예의전당", value="롤파티 리그 우승팀을 소개합니다.", inline=False)
         embed.add_field(name="!!내전", value="내전 대기실에 있는 인원을 자동으로 팀을 편성해줍니다.", inline=False)
+        embed.add_field(name="!!정보 '@유저'", value="인증된 유저에 한해 정보를 보여줍니다.", inline=False)
     else:
         embed.add_field(name="!!도움말 일반", value="일반 및 유틸 명령어을 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 파티", value="파티와 관련된 명령어를 보여줍니다.", inline=False)
@@ -235,6 +235,11 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!도움말 아카데미", value="인증과 관련된 명령어를 보여줍니다.", inline=False)
     embed.set_footer(text=footer)
     await ctx.message.author.send(embed=embed)
+
+@bot.command()
+async def 인증(ctx):
+    await ctx.message.delete()
+    await ctx.send("`!!인증시작 '소환사명'` 명령어로 인증을 시작할 수 있습니다.")
 
 @bot.command()
 async def 인증시작(ctx,*,summoner=""):
@@ -924,6 +929,12 @@ async def 소환사(ctx,*,lolname):
                 embed.add_field(name="**SOLO RANK**", value=f"정보가 없습니다.", inline=True)
         embed.set_footer(text=footer)
         await ctx.send(embed=embed)
+
+@bot.command()
+async def 내정보(ctx):
+    await ctx.message.delete()
+    await ctx.send("해당 명령어는 `!!정보 @유저` 명령어로 변경되었습니다.")
+
 
 @bot.command()
 async def 정보(ctx,member:discord.Member):
