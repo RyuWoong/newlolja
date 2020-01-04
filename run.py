@@ -12,7 +12,7 @@ apptitle = "LoLJa"
 footer = f"{apptitle} ver.1.0.0 | ⓒ 2019 깜뭉이"
 bot.STATUS_START = False
 bot.myGuild = None
-myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276, 654493812860780544,654825518461354004 ]
+myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276,654493812860780544,654825518461354004,662909933112524824]
 normal_Channel = 654337874207965184
 chess_Channel = 654337910979559426
 rank_Channel = 654507949774995459
@@ -73,12 +73,13 @@ async def on_ready():
     #os.system('cls')
     os.system('clear')
     bot.myGuild = bot.get_guild(316770615644389376)
-    #myVoiceChannels = bot.myGuild.categories
+    myVoiceChannels = bot.myGuild.voice_channels
     print("       @ Discord Bot LOLJA")
     print("       @ MADE BY. 깜뭉이")
     print("       @ Copyright 깜뭉이. 2019")
     print("       @ Start!")
     print("       GUILD -")
+    print(myVoiceChannels)
     bot.STATUS_START = True
 
 ## Discord error ##
