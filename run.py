@@ -567,7 +567,7 @@ async def 파티가입(ctx,member:discord.Member):
         log.logger.info(f"C: 파티가입 S: 시작 W: {leader.name}")
         try:
             party = db.get_member(member.id)
-            if party[7] == None:
+            if party[7] != None:
                 return await ctx.send("해당 유저는 이미 파티가 있습니다.")
             if get(member.roles,name="인증")==None:
                 return await ctx.send("해당 유저는 인증 되지 않았습니다.")
@@ -836,10 +836,10 @@ async def 내전(ctx):
     text_Channel = ctx.guild.get_channel(civilwar_Channel)
     members = channel.members
     category = channel.category
+    teams = list()
+    team = list()
     for member in members:
         print(member)
-        teams = list()
-        team = list()
         team.append(member)
         members.remove(member)
         if len(team) == 5:
