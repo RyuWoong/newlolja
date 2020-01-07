@@ -88,6 +88,8 @@ async def on_ready():
 #     log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
 
 ## Discord Event##
+
+
 @bot.event
 async def on_member_ban(guild,user):
     print(guild,user)
@@ -185,6 +187,15 @@ async def on_voice_state_update(member,before,after):
 
 
 
+@bot.event
+async def on_member_update(before,after):
+    if after.activity == None:
+        pass
+    else:
+        if str(after.activity.type)== "ActivityType.streaming":
+            print(after.activity)
+
+
 ## Discord Command ##
 @bot.command()
 async def 아이디(ctx,mention:discord.Member):
@@ -192,6 +203,9 @@ async def 아이디(ctx,mention:discord.Member):
     member_id =  mention.id
     await ctx.message.author.send(mention,member_id)
 
+@bot.command()
+async def 테스트(ctx):
+    await ctx.message.author.send(f"**스트리머**님 안녕하세요? 저희 **LOL PARTY**와 함께 하시게 된 것을 진심으로 환영합니다.\n도움이 필요하시면 **깜뭉이**에게 문의 부탁드립니다! 또한 필요한 기능이 있으시다면 언제든 말씀해주세요.\n\n:gift: 서버내 혜택\n1. 스트리머 역할 부여 및 `!!스트리머` 명령어로 스트리머 소개 (`!!스트리머인사말 '인사말'` 명령어로 스트리머 인사말을 편집 할 수 있습니다.)\n2. 스트리머 채널 및 채팅 채널에서 방송 공지 가능 (향후 봇이 자동적으로 알리도록 개선)\n\n:octagonal_sign: 서버 요청사항\n1. 싹둑이로 서버 초대코드 노출\n2. 간간히 서버내 시참방송")
 
 @bot.command()
 async def 도움말(ctx,detail=None):
@@ -328,7 +342,7 @@ async def 인증완료(ctx):
                     await member.add_roles(tier_role)
 
             url=bot.myGuild.icon_url
-            embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xe74c3c)
+            embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xf3bb76)
             embed.set_thumbnail(url=url)
             embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {member.mention}\n소환사명: {summoner_name}", inline=False)
             if tier_role.name == "UNRANKED":
@@ -443,10 +457,11 @@ async def 스트리머등록(ctx,streamer: discord.Member,url):
             role = get(ctx.guild.roles, name="스트리머")
         except Exception as ex:
             log.logger.error(f"C: 스트리머등록 S: 실패 R: {ex}")
-            return await ctx.send(f"{streamer.mention}님 스트리머 등록 실패했습니다.")
+            return await ctx.message.author.send(f"{streamer.mention}님 스트리머 등록 실패했습니다.")
         else:
             await streamer.add_roles(role)
-            await ctx.send(f"{streamer.mention}님을 스트리머로 등록 했습니다.")
+            await ctx.message.author.send(f"{streamer.mention}님을 스트리머로 등록 했습니다.")
+            await ctx.streamer.send(f"**{name}**님 안녕하세요? 저희 **LOL PARTY**와 함께 하시게 된 것을 진심으로 환영합니다.\n도움이 필요하시면 **깜뭉이**에게 문의 부탁드립니다! 또한 필요한 기능이 있으시다면 언제든 말씀해주세요.\n\n:gift: 서버내 혜택\n1. 스트리머 역할 부여 및 `!!스트리머` 명령어로 스트리머 소개 (`!!스트리머인사말 '인사말'` 명령어로 스트리머 인사말을 편집 할 수 있습니다.)\n2. 스트리머 채널 및 채팅 채널에서 방송 공지 가능 (향후 봇이 자동적으로 알리도록 변경)\n\n:octagonal_sign: 서버 요청사항\n1. 싹둑이로 서버 초대코드 노출\n2. 간간히 서버내 시참방송")
             log.logger.info(f"C: 스트리머등록 S: 완료 W: {ctx.author.name} T: {streamer.name}")
     else:
         pass
@@ -831,10 +846,12 @@ async def 경고(ctx,member:discord.Member,*,reason):
         await channel.send(embed=embed)
         if role.name == "차단":
             await admin.send("해당 유저를 차단해주세요.")
+        log.logger.info(f"C: 경고완료 S: 완료 W: {admin} T: {member}")
 
 @bot.command()
 async def 내전(ctx):
     await ctx.message.delete()
+    log.logger.info(f"C: 내전 S: 시작 W: {ctx.message.author}")
     channel = ctx.guild.get_channel(waiting_Channel)
     text_Channel = ctx.guild.get_channel(civilwar_Channel)
     members = channel.members
@@ -872,6 +889,43 @@ async def 내전(ctx):
         team_num = team_num+1
     embed.set_footer(text=footer)
     await text_Channel.send(embed=embed)
+    log.logger.info(f"C: 내전 S: 완료 W: {ctx.message.author}")
+
+@bot.command()
+async def 내전참가(ctx):
+    await ctx.message.delete()
+    log.logger.info(f"C: 내전참가 S: 시작 W: {ctx.message.author}")
+    member = ctx.message.author
+    role = get(ctx.guild.roles,name="내전참가자")
+    await member.add_roles(role)
+    await member.send(":white_check_mark: LOL PARTY 내전참가 신청이 완료되었습니다\n공지사항에 적힌 내전 시간을 꼭 확인해주세요.\n:octagonal_sign: **지각,무단 불참**은 향후 내전 참가 시 **불이익**을 받을 수도 있습니다.")
+    log.logger.info(f"C: 내전참가 S: 완료 W: {ctx.message.author}")
+
+@bot.command()
+async def 내전인원(ctx):
+    await ctx.message.delete()
+    if check(ctx,"admin"):
+        text_Channel = ctx.guild.get_channel(civilwar_Channel)
+        role = get(ctx.guild.roles,name="내전참가자")
+        members = role.members
+        member_mention = list()
+        for member in members:
+            member_mention.append(member.mention)
+        embed=discord.Embed(title= f"LOL Party 내전",description=f"참가자 목록입니다.", color=0xf3bb76)
+        embed.add_field(name=f"🔥참여자", value=",".join(map(str,member_mention))+" ", inline=False)
+        await text_Channel.send(embed=embed)
+
+@bot.command()
+async def 내전종료(ctx):
+    await ctx.message.delete()
+    if check(ctx,"admin"):
+        text_Channel = ctx.guild.get_channel(civilwar_Channel)
+        role = get(ctx.guild.roles,name="내전참가자")
+        members = role.members
+        for member in members:
+            await member.remove_roles(role)
+        await text_Channel.send("내전 참가자를 초기화 했습니다.")
+
 
 @bot.command()
 async def 주사위(ctx):
