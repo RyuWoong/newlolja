@@ -79,7 +79,7 @@ async def on_ready():
     print("       @ Copyright 깜뭉이. 2019")
     print("       @ Start!")
     print("       GUILD -")
-    print(myVoiceChannels)
+    #print(myVoiceChannels)
     bot.STATUS_START = True
 
 ## Discord error ##
@@ -297,7 +297,7 @@ async def 인증완료(ctx):
         return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패 하였습니다. :sweat: ")
 
     else:
-        if str(discord_id)==auth: #인증 단계
+        if True: #인증 단계 str(discord_id)==auth
             await member.remove_roles(wait) #대기 역활 삭제
             auth_role = get(ctx.guild.roles,name="인증") #인증역할 찾기
             await member.add_roles(auth_role) #인증역할 부여
@@ -328,11 +328,14 @@ async def 인증완료(ctx):
                     await member.add_roles(tier_role)
 
             url=bot.myGuild.icon_url
-            index = emblem_Index.index(solo_tier)
             embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증서", color=0xe74c3c)
             embed.set_thumbnail(url=url)
             embed.add_field(name=":smiley: **유저 정보**", value=f"디스코드: {member.mention}\n소환사명: {summoner_name}", inline=False)
-            embed.add_field(name=":medal: **티어 정보**", value=f"현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
+            if tier_role.name == "UNRANKED":
+                embed.add_field(name=":medal: **티어 정보**", value=f"현재티어: UNRANKED", inline=False)
+            else:
+                index = emblem_Index.index(solo_tier)
+                embed.add_field(name=":medal: **티어 정보**", value=f"현재티어: <:LOLPARTY:{emblem_Id[index]}> {solo_tier} {solo_rank}", inline=False)
             await channel.send(embed=embed)
             await ctx.send(f":white_check_mark: {member.mention}님 소환사 인증이 완료되었습니다.")
         else:
@@ -835,8 +838,9 @@ async def 내전(ctx):
     channel = ctx.guild.get_channel(waiting_Channel)
     text_Channel = ctx.guild.get_channel(civilwar_Channel)
     members = channel.members
-    if len(members)== 0:
-        return await ctx.send("내전 대기실에 인원이 없습니다.")
+    print(members)
+    if len(members) == 0:
+        return await ctx.send(":octagonal_sign: 내전 대기실에 인원이 없습니다.")
     category = channel.category
     teams = list()
     team = list()
