@@ -5,4 +5,3 @@ def GET_KEY(name):
     file = open(path,"r",encoding="utf-8")
     key = file.read().split()
     return key
-

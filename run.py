@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.1.0.0")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -240,7 +240,7 @@ async def 도움말(ctx,detail=None):
 @bot.command()
 async def 인증(ctx):
     await ctx.message.delete()
-    await ctx.send("`!!인증시작 '소환사명'` 명령어로 인증을 시작할 수 있습니다.")
+    await ctx.send("`!!인증시작 소환사명` 명령어로 인증을 시작할 수 있습니다.")
 
 @bot.command()
 async def 인증시작(ctx,*,summoner=""):
@@ -835,32 +835,37 @@ async def 내전(ctx):
     channel = ctx.guild.get_channel(waiting_Channel)
     text_Channel = ctx.guild.get_channel(civilwar_Channel)
     members = channel.members
+    if len(members)== 0:
+        return await ctx.send("내전 대기실에 인원이 없습니다.")
     category = channel.category
     teams = list()
     team = list()
-    for member in members:
+    for member in members: #멤버 수 만큼 반복하여
         print(member)
         team.append(member)
         members.remove(member)
-        if len(team) == 5:
-            if len(members) != 0:
-                teams.append(team)
-                team.clear()
-        if len(members) == 0:
+        print(team)
+        print(members)
+        if len(team) == 5: #팀의 멤버수가 5명이라면 팀을 저장하고 팀을 비운다.
             teams.append(team)
-    embed=discord.Embed(title= f"LOL Party 내전",description=f"LOL PARTY 내전 랜덤 팀 배정", color=0xf3bb76)  
-    for team in teams:
-        team_num = 1
+            team.clear()
+        if len(members)==0: #만약 members의 수가 0명이라면 반복을 끝낸다.
+            if len(team) > 0:
+                teams.append(team)
+                team.clear
+            break
+    embed=discord.Embed(title= f"LOL Party 내전",description=f"LOL PARTY 내전 랜덤 팀 배정", color=0xf3bb76) 
+    team_num = 1 
+    for team1 in teams: #팀 수 만큼 반복한다. 팀 음성 채널을 개설하고
         team_Channel = await category.create_voice_channel(name=f"🔥TEAM. {team_num}",bitrate=bot.myGuild.bitrate_limit,user_limit=5)
         member_mention = list()
-
-        for member in team:
+        print(member_mention)
+        for member in team1: #팀내 멤버수 만큼 반복한다. 멤버 멘션 값을 저장하고 멤버를 채널로 옮긴다.
             member_mention.append(member.mention)
             await member.move_to(team_Channel)
-           
+            print(f"완료:{member_mention}")
         embed.add_field(name=f"🔥TEAM. {team_num}", value=",".join(map(str,member_mention)), inline=False)
         team_num = team_num+1
-        member_mention.clear()
     embed.set_footer(text=footer)
     await text_Channel.send(embed=embed)
 
@@ -904,7 +909,7 @@ async def 소환사(ctx,*,lolname):
         summoner_level = summoner['summonerLevel']
         summoner_Icon = summoner['profileIconId']
         summoner_id = summoner['id']
-        account_id = summoner['accountId']
+        #account_id = summoner['accountId']
         leagues = lol.get_summoner_league(summoner_id)
         embed=discord.Embed(title= f"{lolname}",description=f"Lv. {summoner_level}", color=0xf3bb76)
         embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/9.24.2/img/profileicon/{summoner_Icon}.png")
@@ -964,4 +969,4 @@ async def 정보(ctx,member:discord.Member):
         embed.set_footer(text=f"{member.id}")
         await ctx.send(embed=embed)
 
-bot.run(token[0])
+bot.run(token[1])
