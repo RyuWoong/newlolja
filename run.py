@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.1.0.0")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -21,6 +21,7 @@ team_category = 376628550041731072
 caution_Channel = 506395577815138304
 civilwar_Channel = 654952875583209502
 academy_Channel = 657017538965667867
+streamer_Channel = 663912768738557992
 emoji_url = "https://cdn.discordapp.com/emojis/"
 emblem_Id = [654644195260366848,654644204978307072,654644217284526091,654644225706557470,654644237278773258,654644245277442048,654644294019448832,654644301975912479,654644310054273036]
 emblem_Index = ["IRON","BRONZE","SILVER","GOLD","PLATINUM","DIAMOND","MASTER","GRANDMASTER","CHALLENGER"]
@@ -81,15 +82,14 @@ async def on_ready():
     print("       GUILD -")
     #print(myVoiceChannels)
     bot.STATUS_START = True
-
+'''
 ## Discord error ##
-# @bot.listen('on_command_error')
-# async def on_command_error(ctx,ex):
-#     log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
-
+@bot.listen('on_command_error')
+async def on_command_error(ctx,ex):
+    log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
+'''
 ## Discord Event##
-
-
+'''
 @bot.event
 async def on_member_ban(guild,user):
     print(guild,user)
@@ -184,17 +184,26 @@ async def on_voice_state_update(member,before,after):
                     await channel.send(embed=embed)
             else:
                 pass
-
-
+'''
 
 @bot.event
 async def on_member_update(before,after):
     if after.activity == None:
         pass
     else:
+        print(after.activity)
         if str(after.activity.type)== "ActivityType.streaming":
-            print(after.activity)
-
+            if get(after.roles,name="스트리머") == None:
+                pass
+            else:
+                log.logger.info(f"C: 방송알림 S: 시작 W:{after}")
+                channel= after.guild.get_channel(streamer_Channel)
+                embed=discord.Embed(title= f"{after.name}님이 방송중!",description=after.activity.twitch_name,url=after.activity.url, color=0x6441A5)
+                embed.set_thumbnail(url=after.avatar_url)
+                embed.add_field(name=after.activity.name, value=after.activity.detail, inline=False)
+                embed.set_footer(text=":balloon: LOL PARTY STEAMER")
+                await channel.send(content=f"여기에요! {after.activity.name}님이 방송을 시작했다구요! @here ",embed=embed)
+                log.logger.info(f"C: 방송알림 S: 완료 W:{after}")
 
 ## Discord Command ##
 @bot.command()
@@ -205,7 +214,8 @@ async def 아이디(ctx,mention:discord.Member):
 
 @bot.command()
 async def 테스트(ctx):
-    await ctx.message.author.send(f"**스트리머**님 안녕하세요? 저희 **LOL PARTY**와 함께 하시게 된 것을 진심으로 환영합니다.\n도움이 필요하시면 **깜뭉이**에게 문의 부탁드립니다! 또한 필요한 기능이 있으시다면 언제든 말씀해주세요.\n\n:gift: 서버내 혜택\n1. 스트리머 역할 부여 및 `!!스트리머` 명령어로 스트리머 소개 (`!!스트리머인사말 '인사말'` 명령어로 스트리머 인사말을 편집 할 수 있습니다.)\n2. 스트리머 채널 및 채팅 채널에서 방송 공지 가능 (향후 봇이 자동적으로 알리도록 개선)\n\n:octagonal_sign: 서버 요청사항\n1. 싹둑이로 서버 초대코드 노출\n2. 간간히 서버내 시참방송")
+    stream = discord.Streaming(name="쏘기자",url=" https://www.twitch.tv/sso_lovely91")
+    print(stream)
 
 @bot.command()
 async def 도움말(ctx,detail=None):
@@ -912,7 +922,10 @@ async def 내전인원(ctx):
         for member in members:
             member_mention.append(member.mention)
         embed=discord.Embed(title= f"LOL Party 내전",description=f"참가자 목록입니다.", color=0xf3bb76)
-        embed.add_field(name=f"🔥참여자", value=",".join(map(str,member_mention))+" ", inline=False)
+        if len(members) == 0:
+            embed.add_field(name=f"🔥참가자", value="참가자가 없습니다.", inline=False)
+        else:
+            embed.add_field(name=f"🔥참가자", value=",".join(map(str,member_mention))+" ", inline=False)
         await text_Channel.send(embed=embed)
 
 @bot.command()
@@ -1025,6 +1038,6 @@ async def 정보(ctx,member:discord.Member):
         if member.id in winners:
             embed.set_image(url="https://media.discordapp.net/attachments/624997033362849827/654935380738703361/Sparkle.gif")
         embed.set_footer(text=f"{member.id}")
-        await ctx.send(embed=embed)
+        await ctx.send(content="",embed=embed)
 
-bot.run(token[0])
+bot.run(token[1])
