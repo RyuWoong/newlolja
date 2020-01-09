@@ -185,7 +185,7 @@ async def on_voice_state_update(member,before,after):
             else:
                 pass
 
-
+'''
 @bot.event
 async def on_member_update(before,after):
     if after.activity == None:
@@ -204,6 +204,7 @@ async def on_member_update(before,after):
                 embed.set_footer(text=":balloon: LOL PARTY STEAMER")
                 await channel.send(content=f"여기에요! {after.display_name}님이 방송을 시작했다구요!",embed=embed)
                 log.logger.info(f"C: 방송알림 S: 완료 W:{after}")
+'''
 
 ## Discord Command ##
 @bot.command()
