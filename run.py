@@ -4,8 +4,8 @@ from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
-game = discord.Game("!!도움말 ver.1.0.0")
-bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
+game = discord.Game("!!도움말 ver.1.0.1")
+bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -89,7 +89,7 @@ async def on_command_error(ctx,ex):
     log.logger.error(f"!!!!!!!!!!Discord Error :: {ex}")
 '''
 ## Discord Event##
-'''
+
 @bot.event
 async def on_member_ban(guild,user):
     print(guild,user)
@@ -184,38 +184,58 @@ async def on_voice_state_update(member,before,after):
                     await channel.send(embed=embed)
             else:
                 pass
-'''
+
 
 @bot.event
 async def on_member_update(before,after):
     if after.activity == None:
         pass
     else:
-        print(after.activity)
         if str(after.activity.type)== "ActivityType.streaming":
             if get(after.roles,name="스트리머") == None:
                 pass
             else:
                 log.logger.info(f"C: 방송알림 S: 시작 W:{after}")
                 channel= after.guild.get_channel(streamer_Channel)
-                embed=discord.Embed(title= f"{after.name}님이 방송중!",description=after.activity.twitch_name,url=after.activity.url, color=0x6441A5)
+                embed=discord.Embed(title=after.activity.details,description=after.display_name,url=after.activity.url,  color=0x6441A5)
                 embed.set_thumbnail(url=after.avatar_url)
-                embed.add_field(name=after.activity.name, value=after.activity.detail, inline=False)
+                embed.add_field(name="스트리머", value=after.activity.twitch_name, inline=True)
+                embed.add_field(name="디스코드", value=after.mention)
                 embed.set_footer(text=":balloon: LOL PARTY STEAMER")
-                await channel.send(content=f"여기에요! {after.activity.name}님이 방송을 시작했다구요! @here ",embed=embed)
+                await channel.send(content=f"여기에요! {after.display_name}님이 방송을 시작했다구요!",embed=embed)
                 log.logger.info(f"C: 방송알림 S: 완료 W:{after}")
 
 ## Discord Command ##
 @bot.command()
 async def 아이디(ctx,mention:discord.Member):
     await ctx.message.delete()
-    member_id =  mention.id
+    member_id = mention.id
     await ctx.message.author.send(mention,member_id)
 
 @bot.command()
-async def 테스트(ctx):
-    stream = discord.Streaming(name="쏘기자",url=" https://www.twitch.tv/sso_lovely91")
-    print(stream)
+async def 활동(ctx,after:discord.Member):
+    await ctx.message.delete()
+    print(after.activities)
+    activity = after.activities
+    streaming = activity[1]
+    print(streaming)
+    print(streaming.name)
+    print(streaming.url)
+
+@bot.command()
+async def 방송(ctx,after:discord.Member):
+    await ctx.message.delete()
+    log.logger.info(f"C: 방송알림 S: 시작 W:{after}")
+    print(after.activity.name)
+    print(after.activity.url)
+    channel= after.guild.get_channel(streamer_Channel)
+    embed=discord.Embed(title=after.activity.details,description=after.display_name,url=after.activity.url, color=0x6441A5)
+    embed.set_thumbnail(url=f"{after.activity.url}/profile")
+    embed.add_field(name="스트리머", value=after.activity.twitch_name, inline=True)
+    embed.add_field(name="디스코드", value=after.mention)
+    embed.set_footer(text=":balloon: LOL PARTY STEAMER")
+    await channel.send(content=f"여기에요! {after.display_name}님이 방송을 시작했다구요!",embed=embed)
+    log.logger.info(f"C: 방송알림 S: 완료 W:{after}")
 
 @bot.command()
 async def 도움말(ctx,detail=None):
@@ -445,7 +465,7 @@ async def 스트리머(ctx):
     if steamers != None:
         for streamer in steamers:
             embed=discord.Embed(title= f"{streamer[1]}", description=f"{streamer[2]}",url=f"{streamer[3]}", color=0xf3bb76)
-            embed.set_image(url=f"{streamer[4]}")
+            embed.set_thumbnail(url=f"{streamer[4]}")
             await ctx.message.author.send(embed=embed)
     else:
         await ctx.message.author.send(f"서버와 연결된 스트리머가 없습니다. 저희 서버와 제휴 하실 스트리머는 관리자에게 연락 부탁드립니다.")
@@ -1040,4 +1060,4 @@ async def 정보(ctx,member:discord.Member):
         embed.set_footer(text=f"{member.id}")
         await ctx.send(content="",embed=embed)
 
-bot.run(token[1])
+bot.run(token[0])
