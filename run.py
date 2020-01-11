@@ -4,7 +4,7 @@ from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
-game = discord.Game("!!도움말 ver.1.0.1")
+game = discord.Game("!!도움말 ver.1.0.2")
 bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
@@ -972,6 +972,18 @@ async def 뽑기(ctx,number: int):
     num = random.randrange(1,number)
     log.logger.info(f"call : {ctx.message.author} func : 뽑기")
     await ctx.send(f"선택된 번호는! **{num}**")
+
+@bot.command()
+async def 챔피언룰렛(ctx):
+    member = ctx.message.author
+    champions = lol.get_champions()
+    num = random.randrange(1,len(champions))
+    list_champions = list(champions)
+    champion_name =  list_champions[num]
+    champion = champions.get(champion_name)
+    embed = discord.Embed(title= f"**{champion['name']}**",description=f"{member.mention}", color=0xf3bb76)
+    embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/img/champion/splash/{champion_name}_0.jpg")
+    await ctx.send(embed=embed)
 
 @bot.command()
 async def 명예의전당(ctx):
