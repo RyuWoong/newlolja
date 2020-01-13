@@ -108,4 +108,3 @@ def get_champions():
     else:
         return None
 
-get_champions()
