@@ -4,12 +4,12 @@ from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
-game = discord.Game("!!도움말 ver.1.0.2")
-bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
+game = discord.Game("!!도움말 ver.1.0.3")
+bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
-footer = f"{apptitle} ver.1.0.2 | ⓒ 2019 깜뭉이"
+footer = f"{apptitle} ver.1.0.3 | ⓒ 2019 깜뭉이"
 bot.STATUS_START = False
 bot.myGuild = None
 myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276,654493812860780544,654825518461354004,662909933112524824]
@@ -71,8 +71,6 @@ def check(ctx,type):
 ## Start Bot ##
 @bot.event
 async def on_ready():
-    #os.system('cls')
-    os.system('clear')
     bot.myGuild = bot.get_guild(316770615644389376)
     myVoiceChannels = bot.myGuild.voice_channels
     print("       @ Discord Bot LOLJA")
@@ -1072,4 +1070,4 @@ async def 정보(ctx,member:discord.Member):
         embed.set_footer(text=f"{member.id}")
         await ctx.send(content="",embed=embed)
 
-bot.run(token[1])
+bot.run(token[0])
