@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.1.0.2")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -211,7 +211,7 @@ async def on_member_update(before,after):
 async def 아이디(ctx,mention:discord.Member):
     await ctx.message.delete()
     member_id = mention.id
-    await ctx.message.author.send(mention,member_id)
+    await ctx.message.author.send(f"{mention} {member_id}")
 
 @bot.command()
 async def 활동(ctx,after:discord.Member):
@@ -975,6 +975,7 @@ async def 뽑기(ctx,number: int):
 
 @bot.command()
 async def 챔피언룰렛(ctx):
+    await ctx.message.delete()
     member = ctx.message.author
     champions = lol.get_champions()
     num = random.randrange(1,len(champions))
@@ -1073,4 +1074,4 @@ async def 정보(ctx,member:discord.Member):
         embed.set_footer(text=f"{member.id}")
         await ctx.send(content="",embed=embed)
 
-bot.run(token[0])
+bot.run(token[1])
