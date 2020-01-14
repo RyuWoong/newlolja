@@ -9,7 +9,7 @@ bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game
 
 ## Default Value ##
 apptitle = "LoLJa"
-footer = f"{apptitle} ver.1.0.0 | ⓒ 2019 깜뭉이"
+footer = f"{apptitle} ver.1.0.2 | ⓒ 2019 깜뭉이"
 bot.STATUS_START = False
 bot.myGuild = None
 myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276,654493812860780544,654825518461354004,662909933112524824]
@@ -643,7 +643,7 @@ async def 파티탈퇴(ctx,member:discord.Member=None):
     log.logger.info(f"C: 파티탈퇴 S: 시작 W: {leader.name}")
     try:
         party_name = db.get_party(leader_id)
-        role = get(ctx.guld.roles,name=party_name)
+        role = get(ctx.guild.roles,name=party_name)
     except Exception as ex:
         log.logger.error(f"C: 파티탈퇴 S: 실패 W: {leader.name} R: {ex}")
     else:
@@ -890,22 +890,20 @@ async def 내전(ctx):
     if len(members) == 0:
         return await ctx.send(":octagonal_sign: 내전 대기실에 인원이 없습니다.")
     category = channel.category
-    teams = list()
-    team = list()
+    teams = []
+    team = []
+    num = 0
     for member in members: #멤버 수 만큼 반복하여
-        print(member)
+        num = num + 1
         team.append(member)
-        members.remove(member)
-        print(team)
-        print(members)
         if len(team) == 5: #팀의 멤버수가 5명이라면 팀을 저장하고 팀을 비운다.
             teams.append(team)
-            team.clear()
-        if len(members)==0: #만약 members의 수가 0명이라면 반복을 끝낸다.
+            team = []
+        if len(members)== num: #만약 members의 수가 0명이라면 반복을 끝낸다.
             if len(team) > 0:
-                teams.append(team)
-                team.clear
+                teams.append(team) 
             break
+
     embed=discord.Embed(title= f"LOL Party 내전",description=f"LOL PARTY 내전 랜덤 팀 배정", color=0xf3bb76) 
     team_num = 1 
     for team1 in teams: #팀 수 만큼 반복한다. 팀 음성 채널을 개설하고
