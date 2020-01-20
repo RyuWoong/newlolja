@@ -127,8 +127,8 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="일반 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
-                    invite = await new_channel.create_invite(max_age=360)
+                    new_channel = await category.create_voice_channel(name="일반 게임",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(normal_Channel)
                     await member.move_to(new_channel)
                     embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
@@ -142,8 +142,8 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="TFT 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
-                    invite = await new_channel.create_invite(max_age=360)
+                    new_channel = await category.create_voice_channel(name="TFT 게임",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
+                    invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(chess_Channel)
                     await member.move_to(new_channel)
                     embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
@@ -157,8 +157,8 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="듀오 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
-                    invite = await new_channel.create_invite(max_age=360)
+                    new_channel = await category.create_voice_channel(name="듀오 게임",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
+                    invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
                     embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
@@ -172,8 +172,8 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="자유 방제 미정",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
-                    invite = await new_channel.create_invite(max_age=360)
+                    new_channel = await category.create_voice_channel(name="자유 랭크 게임",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
                     embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
@@ -267,11 +267,14 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!공지", value="서버 공지사항을 알려줍니다.", inline=False)
         embed.add_field(name="!!주사위", value="1~100까지의 값 중 하나를 표시합니다.", inline=False)
         embed.add_field(name="!!뽑기 '최대 값(숫자)'", value="1~최대 값까지 숫자 하나를 표시합니다.", inline=False)
+        embed.add_field(name="!!챔피언룰렛", value="챔피언 중 하나를 선택해 표시합니다.", inline=False)
         embed.add_field(name="!!스트리머", value="해당 서버에 소속된 스트리머를 표시합니다.", inline=False)
         embed.add_field(name="!!소환사 '소환사명'", value="해당 소환사의 정보를 표시합니다.", inline=False)
         embed.add_field(name="!!명예의전당", value="롤파티 리그 우승팀을 소개합니다.", inline=False)
         embed.add_field(name="!!내전", value="내전 대기실에 있는 인원을 자동으로 팀을 편성해줍니다.", inline=False)
+        embed.add_field(name="!!내전참가", value="내전 참여를 지원합니다.", inline=False)
         embed.add_field(name="!!정보 '@유저'", value="인증된 유저에 한해 정보를 보여줍니다.", inline=False)
+        
     else:
         embed.add_field(name="!!도움말 일반", value="일반 및 유틸 명령어을 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 파티", value="파티와 관련된 명령어를 보여줍니다.", inline=False)
@@ -310,7 +313,7 @@ async def 인증시작(ctx,*,summoner=""):
         embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증", description=f"대표하는 소환사 계정을 인증합니다.", color=0xf3bb76)
         embed.set_thumbnail(url=bot.myGuild.icon_url)
         embed.add_field(name=":pencil2: 인증번호", value=f"{discord_id}", inline=False)
-        embed.add_field(name=":bangbang: 주의사항", value=f"클라이언트에서 반드시 동의 버튼을 눌러야합니다. 이후 인증채널에서 '!!인증완료' 명령어를 입력해주세요.", inline=False)
+        embed.add_field(name=":bangbang: 주의사항", value=f"클라이언트에서 반드시 동의 버튼을 눌러야합니다. 이후 인증채널에서 `!!인증완료` 명령어를 꼭 입력해주세요.", inline=False)
         embed.set_image(url="https://i.imgur.com/XQFFBm1.png")
         embed.set_footer(text=footer)
         await member.send(embed=embed)
@@ -614,9 +617,10 @@ async def 파티가입(ctx,member:discord.Member):
         log.logger.info(f"C: 파티가입 S: 시작 W: {leader.name}")
         try:
             party = db.get_member(member.id)
+            auth = get(member.roles, name="인증")
             if party[7] != None:
                 return await ctx.send("해당 유저는 이미 파티가 있습니다.")
-            if get(member.roles,name="인증")==None:
+            elif auth == None :
                 return await ctx.send("해당 유저는 인증 되지 않았습니다.")
             else:
                 party_name = db.get_party(leader_id)
@@ -647,7 +651,7 @@ async def 파티탈퇴(ctx,member:discord.Member=None):
     else:
         if check(ctx,'leader'):
             if member == None:
-                await ctx.send(f"{leader}는 파티를 탈퇴 할 수 없습니다. 필요하신 사항은 관리자에게 문의해주세요.")
+                await ctx.send(f"{leader}는 파티를 탈퇴 할 수 없습니다. 필요 하신 사항은 관리자에게 문의해주세요.")
                 log.logger.info(f"C: 파티탈퇴 S: 실패 W: {leader.name} R: 파티장은 탈퇴 불가")
             else:
                 db.del_partymember(member.id)
@@ -658,7 +662,7 @@ async def 파티탈퇴(ctx,member:discord.Member=None):
             if member == None:
                 db.del_partymember(leader_id)
                 await leader.remove_roles(role)
-                await ctx.send(f"{member.mention}님을 파티에서 탈퇴했습니다.")
+                await ctx.send(f"{member.mention}님이 파티에서 탈퇴했습니다.")
                 log.logger.info(f"C: 파티탈퇴 S: 성공 W: {leader.name} R: 파티에서 탈퇴")
             else:
                 await ctx.send(f"{leader.mention}님은 권한이 없습니다.")
@@ -702,7 +706,7 @@ async def 교직이수(ctx,member:discord.Member,line,*,dec):
                 log.logger.error(f"C: 교직이수 S: 실패 R: {ex}")
             else:
                 print("완료")
-                await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다.\n이제 학생을 받고 가르칠 수 있습니다. 롤자명령어를 확인해주세요.")
+                await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다.\n이제 학생을 받고 가르칠 수 있습니다. LOLJA 명령어를 확인해주세요.")
                 log.logger.error(f"C: 교직이수 S: 완료 T: {member}")
         else:
             await ctx.author.send(f"{member}는 인증된 유저가 아닙니다.")
