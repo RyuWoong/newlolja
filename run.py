@@ -1,15 +1,15 @@
-import asyncio,discord,os,random,threading,log,lol,myfunction,db,sys,time
+import asyncio,discord,os,random,threading,log,lol,myfunction,db,sys,datetime
 from discord.ext import commands
 from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
-game = discord.Game("!!도움말 ver.1.0.3")
+game = discord.Game("!!도움말 ver.1.0.4")
 bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
-footer = f"{apptitle} ver.1.0.3 | ⓒ 2019 깜뭉이"
+footer = f"{apptitle} ver.1.0.4 | ⓒ 2019 - 2020 깜뭉이"
 bot.STATUS_START = False
 bot.myGuild = None
 myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276,654493812860780544,654825518461354004,662909933112524824]
@@ -603,7 +603,11 @@ async def 파티등록(ctx,role_name:discord.Role,member:discord.Member):
             await member.add_roles(role)
             await member.add_roles(role_name)
             await category.create_text_channel(name=f"🎉{party_name}",overwrites=overwrite,topic=f"{party_name} 파티의 채널입니다.")
-            await member.send(f"**{discord_name}**님께서 신청해주신 파티가 승인 되었습니다.\n파티장 역할이 부여 되었으며, 파티 역할 및 채널이 생성 되었습니다. 자세한 운영은 관리자에게 문의해주시거나 **LOLJA** 명령어를 확인해주세요.")
+            embed=discord.Embed(title= f"🎉{party_name}", description=f"파티장 {member.mention}", color=role.color)
+            embed.add_field(name=":book: 파티 약관",value="1. LOL PARTY 서버 내 파티는  LOL PARTY를 대표하는 얼굴입니다. 따라서 내부 활동 및 외부와 스크림 시 신사적인 모습을 보여주시길 바랍니다.\n2. LOL PARTY내 파티는 일반게임,랭크게임,스크림 등의 음성채팅 활동시 서버 내 음성채팅을 활용 하셔야합니다.\n3. 파티의 활동내역이 저조 하거나, 뉴비 배척, 분란 등의 문제가 발생 시 관리자는 파티에 사유 통보 후 파티를 해체 시킬 수 있습니다.\n4. 파티장은 파티 운영에 필요한 기능 및 기타 사항들을 관리자에게 언제든 요구할 수 있습니다.")
+            embed.add_field(name=":bookmark_tabs: 파티장 명령어",value="파티장은 아래와 같이 명령어를 사용하실 수 있습니다.\n`!!파티가입 @유저` `!!파티탈퇴 @유저` `!!파티편집 인사말`\n 궁금하거나 어려운 사항은 관리자에게 질문 부탁드립니다.")
+            embed.set_footer(text=footer)
+            await member.send(embed=embed)
             log.logger.info(f"C: 파티등록 S: 완료 W: {ctx.message.author.name} T: {member.name}")
     else:
         pass
@@ -686,10 +690,33 @@ async def 파티편집(ctx,*,dec):
     else:
         pass
 
-
 @bot.command()
-async def 롤아카데미(ctx):
+async def 파티장위임(ctx,leader:discord.Member,member:discord.Member):
     await ctx.message.delete()
+    ck_leader = get(leader.roles,name="파티장")
+    log.logger.info(f"C: 파티장위임 S: 시작 W: {ctx.message.author}")
+    if ck_leader == None:
+        return await ctx.send(f"{leader.mention}는 파티장이 아닙니다.")
+    else:
+        ck_leader_party = db.get_party(leader.id)
+        ck_member_party = db.get_party(member.id)
+
+        if ck_leader_party != ck_member_party:
+            return await ctx.send(f"{leader.mention}과 {member.mention}의 파티가 일치하지 않습니다.\n파티장과 위임 받을 분의 파티가 동일해야합니다.")
+        else:
+            log.logger.info(f"C: 파티장위임 S: 중간 B: {leader} A: {member}")
+            role = get(ctx.guild.roles,name="파티장")
+            await leader.remove_roles(role)
+            await member.add_roles(role)
+            db.set_partyleader(leader.id,member.id,member.name)
+            embed=discord.Embed(title= f"🎉{ck_leader_party}", description=f"아래와 같이 파티장을 위임합니다.", color=0xf3bb76)
+            embed.add_field(name="현재 파티장",value=f"{leader.mention}",inline=True)
+            embed.add_field(name="위임 받을 파티원",value=f"{member.mention}",inline=True)
+            today = datetime.datetime.now()
+            now = today.strftime('%Y-%m-%d %H:%M:%S')
+            embed.set_footer(text=f"위임일 {now}")
+            await ctx.send(embed=embed)
+            log.logger.info(f"C: 파티장위임 S: 완료 B: {leader} A: {member}")
 
 @bot.command()
 async def 교직이수(ctx,member:discord.Member,line,*,dec):

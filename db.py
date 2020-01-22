@@ -122,6 +122,7 @@ def get_party(discord_id):
         rows = cursor.fetchone()
     except Exception as ex:
         call_error(ex)
+        return None
     finally:
         cursor.close()
         conn.close()
@@ -186,6 +187,19 @@ def set_partydec(leader_id,dec):
         conn = open(db_id,db_pw)
         cursor = conn.cursor()
         sql = f"UPDATE party SET party_dec = '{dec}' WHERE discord_id='{leader_id}'"
+        cursor.execute(sql)
+        conn.commit()
+    except Exception as ex:
+        call_error(ex)
+    finally:
+        cursor.close()
+        conn.close()
+
+def set_partyleader(leader_id,member_id,member_name):
+    try:
+        conn = open(db_id,db_pw)
+        cursor = conn.cursor()
+        sql = f"UPDATE party SET discord_id = '{member_id}', discord_name='{member_name}' WHERE discord_id='{leader_id}'"
         cursor.execute(sql)
         conn.commit()
     except Exception as ex:
