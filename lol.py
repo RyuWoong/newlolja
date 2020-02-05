@@ -99,7 +99,7 @@ def get_account_match(account_id):
         return None
 
 def get_champions():
-    URL = "http://ddragon.leagueoflegends.com/cdn/10.1.1/data/ko_KR/champion.json"
+    URL = "http://ddragon.leagueoflegends.com/cdn/10.3.1/data/ko_KR/champion.json"
     res = requests.get(url=URL)
     if(res.status_code) == 200:
         data = res.json()

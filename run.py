@@ -5,7 +5,7 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.1.0.4")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -716,6 +716,11 @@ async def 파티장위임(ctx,leader:discord.Member,member:discord.Member):
             now = today.strftime('%Y-%m-%d %H:%M:%S')
             embed.set_footer(text=f"위임일 {now}")
             await ctx.send(embed=embed)
+            embed=discord.Embed(title= f"🎉{ck_leader_party}", description=f"파티장 {member.mention}", color=role.color)
+            embed.add_field(name=":book: 파티 약관",value="1. LOL PARTY 서버 내 파티는  LOL PARTY를 대표하는 얼굴입니다. 따라서 내부 활동 및 외부와 스크림 시 신사적인 모습을 보여주시길 바랍니다.\n2. LOL PARTY내 파티는 일반게임,랭크게임,스크림 등의 음성채팅 활동시 서버 내 음성채팅을 활용 하셔야합니다.\n3. 파티의 활동내역이 저조 하거나, 뉴비 배척, 분란 등의 문제가 발생 시 관리자는 파티에 사유 통보 후 파티를 해체 시킬 수 있습니다.\n4. 파티장은 파티 운영에 필요한 기능 및 기타 사항들을 관리자에게 언제든 요구할 수 있습니다.")
+            embed.add_field(name=":bookmark_tabs: 파티장 명령어",value="파티장은 아래와 같이 명령어를 사용하실 수 있습니다.\n`!!파티가입 @유저` `!!파티탈퇴 @유저` `!!파티편집 인사말`\n 궁금하거나 어려운 사항은 관리자에게 질문 부탁드립니다.")
+            embed.set_footer(text=footer)
+            await member.send(embed=embed)
             log.logger.info(f"C: 파티장위임 S: 완료 B: {leader} A: {member}")
 
 @bot.command()
@@ -909,6 +914,24 @@ async def 경고(ctx,member:discord.Member,*,reason):
         log.logger.info(f"C: 경고완료 S: 완료 W: {admin} T: {member}")
 
 @bot.command()
+async def 고객센터(ctx):
+    await ctx.message.delete()
+    log.logger.info(f"C: 고객센터 S: 시작 W: {ctx.message.author}")
+    member = ctx.message.author
+    admin = get(ctx.guild.roles,name="관리자")
+    report_Channel = 506395577815138304
+    channel = bot.myGuild.get_channel(report_Channel)
+    category = channel.category
+    overwrite = {
+                        bot.myGuild.default_role : discord.PermissionOverwrite(read_messages = False),
+                        member : discord.PermissionOverwrite(read_messages=True, send_messages=True)
+                    }
+    await category.create_text_channel(f"🆘{member}",overwrites=overwrite)
+    channel = category.channels
+    await channel[-1].send(f"안녕하세요? {member.mention}님! 롤파티 고객센터입니다.\n이 채널은 문의사항, 건의사항, 신고사항을 위해 생성된 전용 채널입니다.\n해당 채널에서 작성하는 내용은 {admin.mention} 외 볼 수 없습니다.")
+    log.logger.info(f"C: 고객센터 S: 완료 W: {ctx.message.author}")
+
+@bot.command()
 async def 내전(ctx):
     await ctx.message.delete()
     log.logger.info(f"C: 내전 S: 시작 W: {ctx.message.author}")
@@ -1044,7 +1067,7 @@ async def 소환사(ctx,*,lolname):
         #account_id = summoner['accountId']
         leagues = lol.get_summoner_league(summoner_id)
         embed=discord.Embed(title= f"{lolname}",description=f"Lv. {summoner_level}", color=0xf3bb76)
-        embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/9.24.2/img/profileicon/{summoner_Icon}.png")
+        embed.set_thumbnail(url=f"http://ddragon.leagueoflegends.com/cdn/10.3.1/img/profileicon/{summoner_Icon}.png")
         if len(leagues) < 1:
             embed.add_field(name="**SOLO RANK**", value=f"소환사 랭크 정보가 없습니다.", inline=True)
         else:
@@ -1101,4 +1124,4 @@ async def 정보(ctx,member:discord.Member):
         embed.set_footer(text=f"{member.id}")
         await ctx.send(content="",embed=embed)
 
-bot.run(token[0])
+bot.run(token[1])
