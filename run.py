@@ -9,7 +9,7 @@ bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=gam
 
 ## Default Value ##
 apptitle = "LoLJa"
-footer = f"{apptitle} ver.1.0.4 | ⓒ 2019 - 2020 깜뭉이"
+footer = f"{apptitle} ver.1.0.5 | ⓒ 2019 - 2020 깜뭉이"
 bot.STATUS_START = False
 bot.myGuild = None
 myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276,654493812860780544,654825518461354004,662909933112524824]
@@ -274,7 +274,7 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!내전", value="내전 대기실에 있는 인원을 자동으로 팀을 편성해줍니다.", inline=False)
         embed.add_field(name="!!내전참가", value="내전 참여를 지원합니다.", inline=False)
         embed.add_field(name="!!정보 '@유저'", value="인증된 유저에 한해 정보를 보여줍니다.", inline=False)
-        
+        embed.add_field(name="!!고객센터", value="다양한 문의 사항을 처리하기 위해 유저만을 위한 채널을 제재노트 채널 아래에 생성합니다.", inline=False)
     else:
         embed.add_field(name="!!도움말 일반", value="일반 및 유틸 명령어을 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 파티", value="파티와 관련된 명령어를 보여줍니다.", inline=False)
