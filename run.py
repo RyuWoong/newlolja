@@ -3,9 +3,10 @@ from discord.ext import commands
 from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
+set_token = 0;
 token = myfunction.GET_KEY("token.txt")
-game = discord.Game("!!도움말 ver.1.0.5")
-bot = commands.Bot(command_prefix='!!',status=discord.Status.online,activity=game)
+game = discord.Game("!!도움말 ver.1.0.5" if set_token == 0 else 'LOLJA TEST Bot')
+bot = commands.Bot(command_prefix='!!' if set_token == 0 else '-',status=discord.Status.online,activity=game)
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -343,7 +344,7 @@ async def 인증완료(ctx):
         return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패 하였습니다. :sweat: ")
 
     else:
-        if True: #인증 단계 str(discord_id)==auth
+        if str(discord_id)==auth: #인증 단계 str(discord_id)==auth
             await member.remove_roles(wait) #대기 역활 삭제
             auth_role = get(ctx.guild.roles,name="인증") #인증역할 찾기
             await member.add_roles(auth_role) #인증역할 부여
@@ -1124,4 +1125,4 @@ async def 정보(ctx,member:discord.Member):
         embed.set_footer(text=f"{member.id}")
         await ctx.send(content="",embed=embed)
 
-bot.run(token[0])
+bot.run(token[set_token])
