@@ -1,12 +1,13 @@
-import asyncio,discord,os,random,threading,log,lol,myfunction,db,sys,datetime
+import asyncio,discord,os,random,threading,log,lol,myfunction,db,sys,datetime,re
 from discord.ext import commands
 from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
-set_token = 0;
+set_token = 0
 token = myfunction.GET_KEY("token.txt")
 game = discord.Game("!!도움말 ver.1.0.5" if set_token == 0 else 'LOLJA TEST Bot')
 bot = commands.Bot(command_prefix='!!' if set_token == 0 else '-',status=discord.Status.online,activity=game)
+regex = "(?:https?://)?discord(?:app\.com/invite|\.gg)/?[a-zA-Z0-9]+/?"
 
 ## Default Value ##
 apptitle = "LoLJa"
@@ -73,13 +74,11 @@ def check(ctx,type):
 @bot.event
 async def on_ready():
     bot.myGuild = bot.get_guild(316770615644389376)
-    myVoiceChannels = bot.myGuild.voice_channels
     print("       @ Discord Bot LOLJA")
     print("       @ MADE BY. 깜뭉이")
     print("       @ Copyright 깜뭉이. 2019")
     print("       @ Start!")
     print("       GUILD -")
-    #print(myVoiceChannels)
     bot.STATUS_START = True
 '''
 ## Discord error ##
@@ -101,6 +100,25 @@ async def on_member_ban(guild,user):
     embed.add_field(name="제재사유", value=f"경고 누적 혹은 스팸, 악성유저로 서버에서 차단되었습니다.", inline=False)
     await channel.send(embed=embed)
 
+@bot.event
+async def on_message(message):
+    message_content = message.content
+    if message.author.bot == True:
+        pass
+    else:
+        find = re.compile(regex)
+        url = find.search(message_content)
+        if url != None:
+            url = url.group()
+            invite = await bot.fetch_invite(url)
+            if message.guild != invite.guild:
+               channel = await bot.fetch_channel(611717026893004810)
+               admin = get(message.guild.roles,name="관리자")
+               embed=discord.Embed(title= f":incoming_envelope: 스팸 경고!", description=f"스팸에 해당된다면 해당 유저를 처리하십시오.", color=0xf3bb76)
+               embed.add_field(name=f"{message.author.mention}",value=f"{message_content}",inline=False)
+               await channel.send(embed=embed,content=f"{admin.mention}")
+               await message.delete()
+'''
 @bot.event
 async def on_voice_state_update(member,before,after):
     left_channel = before.channel
@@ -183,7 +201,7 @@ async def on_voice_state_update(member,before,after):
                     await channel.send(embed=embed)
             else:
                 pass
-
+'''
 '''
 @bot.event
 async def on_member_update(before,after):
@@ -207,10 +225,8 @@ async def on_member_update(before,after):
 
 ## Discord Command ##
 @bot.command()
-async def 아이디(ctx,mention:discord.Member):
-    await ctx.message.delete()
-    member_id = mention.id
-    await ctx.message.author.send(f"{mention} {member_id}")
+async def 초대(ctx):
+    ctx.guild.invites
 
 @bot.command()
 async def 활동(ctx,after:discord.Member):
