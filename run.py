@@ -119,6 +119,7 @@ async def on_message(message):
                embed.add_field(name=f"{message.author.mention}",value=f"{message_content}",inline=False)
                await channel.send(embed=embed,content=f"{admin.mention}")
                await message.delete()
+    await bot.process_commands(message)
 
 @bot.event
 async def on_voice_state_update(member,before,after):
@@ -281,28 +282,28 @@ async def 인증시작(ctx,*,summoner=""):
     discord_name = member.name
     if check(ctx,"auth"): #소환사 계정 변경 방지. 이미 인증되어 있다면 못하게 제한합니다.
         log.logger.info(f"C: 인증시작 S:실패 R: 이미 인증된 유저")
-        return await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
-    try:
-        summoner_id = lol.get_summoner_id(summoner)
-        print(summoner_id) # 소환사 명을 통해 소환사ID 키 값을 가져옵니다.
-        if summoner_id == None: # 잘못된 소환사 명을 입력 했을 경우 인증 실패로 반환합니다.
-            raise Exception('소환사 명 잘못됨')
-        db.set_member(discord_id,discord_name,summoner_id) # DB에 디스코드id , 디스코드 별명, 소환사 아이디를 기록합니다.
-        role = get(ctx.guild.roles, name="대기") #대기 역할 가져오기
-    except Exception as ex:
-        log.logger.error(f"C: 인증시작 S:실패 R: {ex}")
-        return await ctx.send (f"{member.mention}\n:x: 인증이 실패하였습니다.\n:ballot_box_with_check: **소환사 명**을 정확히 입력해주세요.")
+        await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
     else:
-        await member.add_roles(role) # 대기 라는 역할을 부여하여 유저에게 인증 시작 단계임을 표시합니다.
-        embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증", description=f"대표하는 소환사 계정을 인증합니다.", color=0xf3bb76)
-        embed.set_thumbnail(url=bot.myGuild.icon_url)
-        embed.add_field(name=":pencil2: 인증번호", value=f"{discord_id}", inline=False)
-        embed.add_field(name=":bangbang: 주의사항", value=f"클라이언트에서 반드시 동의 버튼을 눌러야합니다. 이후 인증채널에서 `!!인증완료` 명령어를 꼭 입력해주세요.", inline=False)
-        embed.set_image(url="https://i.imgur.com/XQFFBm1.png")
-        embed.set_footer(text=footer)
-        await member.send(embed=embed)
-        await ctx.send (f"{member.mention}\n:green_square: 인증을 시작합니다. 개인메세지를 확인해주세요.")
-        log.logger.info(f"C: 인증시작 S: 완료 W:{ctx.author.name}")
+        try:
+            summoner_id = lol.get_summoner_id(summoner)
+            if summoner_id == None: # 잘못된 소환사 명을 입력 했을 경우 인증 실패로 반환합니다.
+                raise Exception('소환사 명 잘못됨')
+            db.set_member(discord_id,discord_name,summoner_id) # DB에 디스코드id , 디스코드 별명, 소환사 아이디를 기록합니다.
+            role = get(ctx.guild.roles, name="대기") #대기 역할 가져오기
+        except Exception as ex:
+            log.logger.error(f"C: 인증시작 S:실패 R: {ex}")
+            await ctx.send (f"{member.mention}\n:x: 인증이 실패하였습니다.\n:ballot_box_with_check: **소환사 명**을 정확히 입력해주세요.")
+        else:
+            await member.add_roles(role) # 대기 라는 역할을 부여하여 유저에게 인증 시작 단계임을 표시합니다.
+            embed=discord.Embed(title= f":white_check_mark: LOL PARTY 소환사 인증", description=f"대표하는 소환사 계정을 인증합니다.", color=0xf3bb76)
+            embed.set_thumbnail(url=bot.myGuild.icon_url)
+            embed.add_field(name=":pencil2: 인증번호", value=f"{discord_id}", inline=False)
+            embed.add_field(name=":bangbang: 주의사항", value=f"클라이언트에서 반드시 동의 버튼을 눌러야합니다. 이후 인증채널에서 `!!인증완료` 명령어를 꼭 입력해주세요.", inline=False)
+            embed.set_image(url="https://i.imgur.com/XQFFBm1.png")
+            embed.set_footer(text=footer)
+            await member.send(embed=embed)
+            await ctx.send (f"{member.mention}\n:green_square: 인증을 시작합니다. 개인메세지를 확인해주세요.")
+            log.logger.info(f"C: 인증시작 S: 완료 W:{ctx.author.name}")
 
 @bot.command()
 async def 인증완료(ctx):
@@ -311,21 +312,21 @@ async def 인증완료(ctx):
     member = ctx.message.author #info
     discord_id = member.id
     if check(ctx,"auth"):
-        return await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
+        await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
+        return
     if not check(ctx,"wait"):
-        return await ctx.send(f"{member.mention}\n:exclamation: !!인증시작부터 먼저 입력해주세요.\n:question: 자세한 사항은 `!!도움말 인증`을 확인해주세요.")
-    wait = get(member.roles,name="대기")
+        await ctx.send(f"{member.mention}\n:exclamation: !!인증시작부터 먼저 입력해주세요.\n:question: 자세한 사항은 `!!도움말 인증`을 확인해주세요.")
+        return
     try:
+        wait = get(member.roles,name="대기")
         channel = ctx.guild.get_channel(654855564521897984)
         member_info = db.get_member(discord_id)
         summoner_id = member_info[5]
-        auth = lol.get_auth_value(summoner_id) #소환사id로 인증 값 불러오기
-        
-
+        auth = lol.get_auth_value(summoner_id) #소환사id로 인증 값 불러오기   
     except Exception as ex:
         log.logger.error(f"C: 인증완료 S: 실패 R: {ex}")
-        return await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패 하였습니다. :sweat: ")
-
+        await ctx.send(f"{member.mention}\n:red_square: 소환사 인증을 실패 하였습니다. :sweat: ")
+        return
     else:
         if str(discord_id)==auth: #인증 단계 str(discord_id)==auth
             await member.remove_roles(wait) #대기 역활 삭제
@@ -404,7 +405,8 @@ async def 티어갱신(ctx):
                         solo = False
         except Exception as ex:
             log.logger.error(f"C: 티어갱신 S: 실패 R: {ex}")
-            return await ctx.send(f"{member.mention}\n:red_square: 갱신을 실패하였습니다. X( ")
+            await ctx.send(f"{member.mention}\n:red_square: 갱신을 실패하였습니다. X( ")
+            return
         else:
             url=bot.myGuild.icon_url
             lasttier = get_lasttier.split()
@@ -473,7 +475,8 @@ async def 스트리머등록(ctx,streamer: discord.Member,url):
             role = get(ctx.guild.roles, name="스트리머")
         except Exception as ex:
             log.logger.error(f"C: 스트리머등록 S: 실패 R: {ex}")
-            return await ctx.message.author.send(f"{streamer.mention}님 스트리머 등록 실패했습니다.")
+            await ctx.message.author.send(f"{streamer.mention}님 스트리머 등록 실패했습니다.")
+            return
         else:
             await streamer.add_roles(role)
             await ctx.message.author.send(f"{streamer.mention}님을 스트리머로 등록 했습니다.")
@@ -493,7 +496,8 @@ async def 스트리머인사말(ctx,*,dec):
             db.up_streamer(discord_id,dec)
         except Exception as ex:
             log.logger.error(f"C: 스트리머인사말 S: 실패 R: {ex}")
-            return await ctx.send(f"{author}님의 인사말을 설정하지 못했습니다.")
+            await ctx.send(f"{author}님의 인사말을 설정하지 못했습니다.")
+            return
         else:
             await ctx.send(f"{author}님의 인사말을 설정했습니다.")
             log.logger.info(f"C: 스트리머인사말 S: 완료 W: {ctx.author.name}")
@@ -511,7 +515,8 @@ async def 스트리머해제(ctx,streamer: discord.Member):
             role = get(ctx.guild.roles, name="스트리머")
         except Exception as ex:
             log.logger.error(f"C: 스트리머해제 S: 실패 R: {ex}")
-            return await ctx.send(f"스트리머해제를 실패하였습니다.")
+            await ctx.send(f"스트리머해제를 실패하였습니다.")
+            return
         else:
             await streamer.remove_roles(role)
             await ctx.send(f"{streamer.mention}님이 스트리머해제 되었습니다.")
@@ -532,7 +537,8 @@ async def 파티(ctx,*,party_name):
         print(party_leader)
     except Exception as ex:
         log.logger.error(f"C: 파티 S: 에러 {ex}")
-        return await ctx.send(f"**{party_name}** 이름을 가진 파티가 없습니다.")
+        await ctx.send(f"**{party_name}** 이름을 가진 파티가 없습니다.")
+        return
     else:
         embed=discord.Embed(title= f":tada: {party_name}", description=f"{party_info[3]}", color=party_role.color)
         embed.add_field(name=f":man_mage: 파티장", value=f"{party_leader}", inline=True)
@@ -582,7 +588,8 @@ async def 파티등록(ctx,role_name:discord.Role,member:discord.Member):
             }
         except Exception as ex:
             log.logger.error(f"C: 파티등록 S: 실패 R: {ex}")
-            return await ctx.send("파티등록에 실패했습니다.")
+            await ctx.send("파티등록에 실패했습니다.")
+            return
         else:
             await member.add_roles(role)
             await member.add_roles(role_name)
@@ -607,19 +614,19 @@ async def 파티가입(ctx,member:discord.Member):
             party = db.get_member(member.id)
             auth = get(member.roles, name="인증")
             if party[7] != None:
-                return await ctx.send("해당 유저는 이미 파티가 있습니다.")
+                await ctx.send("해당 유저는 이미 파티가 있습니다.")
             elif auth == None :
-                return await ctx.send("해당 유저는 인증 되지 않았습니다.")
+                await ctx.send("해당 유저는 인증 되지 않았습니다.")
             else:
                 party_name = db.get_party(leader_id)
                 role = get(ctx.guild.roles,name=party_name)
                 if len(role.members) > 10:
-                    return await ctx.send("파티에 최대 인원은 **10명** 입니다.")
+                    await ctx.send("파티에 최대 인원은 **10명** 입니다.")
                 else:
                     db.set_partymemeber(party_name,member.id)
         except Exception as ex:
             log.logger.error(f"C: 파티가입 S: 실패 R: {ex}")
-            return await ctx.send("파티가입에 실패했습니다.")
+            await ctx.send("파티가입에 실패했습니다.")
         else:
             await member.add_roles(role)
             await ctx.send(f"{member.mention}님이 **{party_name}**에 가입되셨습니다.")
@@ -680,13 +687,13 @@ async def 파티장위임(ctx,leader:discord.Member,member:discord.Member):
     ck_leader = get(leader.roles,name="파티장")
     log.logger.info(f"C: 파티장위임 S: 시작 W: {ctx.message.author}")
     if ck_leader == None:
-        return await ctx.send(f"{leader.mention}는 파티장이 아닙니다.")
+        await ctx.send(f"{leader.mention}는 파티장이 아닙니다.")
     else:
         ck_leader_party = db.get_party(leader.id)
         ck_member_party = db.get_party(member.id)
 
         if ck_leader_party != ck_member_party:
-            return await ctx.send(f"{leader.mention}과 {member.mention}의 파티가 일치하지 않습니다.\n파티장과 위임 받을 분의 파티가 동일해야합니다.")
+            await ctx.send(f"{leader.mention}과 {member.mention}의 파티가 일치하지 않습니다.\n파티장과 위임 받을 분의 파티가 동일해야합니다.")
         else:
             log.logger.info(f"C: 파티장위임 S: 중간 B: {leader} A: {member}")
             role = get(ctx.guild.roles,name="파티장")
@@ -856,7 +863,8 @@ async def 공지설정(ctx,*,notice=""):
     if check(ctx,"admin"):
         log.logger.info(f"C: 공지설정 S: 시작 W: {ctx.message.author}")
         if notice == "":
-            return await ctx.message.author.send("공지사항을 입력해주세요.")
+            await ctx.message.author.send("공지사항을 입력해주세요.")
+            return
         else:
             try:
                 print(notice)
@@ -924,7 +932,8 @@ async def 내전(ctx):
     members = channel.members
     print(members)
     if len(members) == 0:
-        return await ctx.send(":octagonal_sign: 내전 대기실에 인원이 없습니다.")
+        await ctx.send(":octagonal_sign: 내전 대기실에 인원이 없습니다.")
+        return
     category = channel.category
     teams = []
     team = []
