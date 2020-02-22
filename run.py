@@ -5,13 +5,14 @@ from discord.utils import get
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
 set_token = 0
 token = myfunction.GET_KEY("token.txt")
-game = discord.Game("!!도움말 ver.1.0.5" if set_token == 0 else 'LOLJA TEST Bot')
+version = "ver.1.0.6"
+game = discord.Game(f"!!도움말 {version}" if set_token == 0 else 'LOLJA TEST Bot')
 bot = commands.Bot(command_prefix='!!' if set_token == 0 else '-',status=discord.Status.online,activity=game)
 regex = "(?:https?://)?discord(?:app\.com/invite|\.gg)/?[a-zA-Z0-9]+/?"
 
 ## Default Value ##
 apptitle = "LoLJa"
-footer = f"{apptitle} ver.1.0.5 | ⓒ 2019 - 2020 깜뭉이"
+footer = f"{apptitle} {version} | ⓒ 2019 - 2020 깜뭉이"
 bot.STATUS_START = False
 bot.myGuild = None
 myVoiceChannels = [654500798281023493, 654493633608810527,654493745554784276,654493812860780544,654825518461354004,662909933112524824]
@@ -69,6 +70,8 @@ def check(ctx,type):
         if student != None:
             check = True
             return check
+    else:
+        return check
 
 ## Start Bot ##
 @bot.event
@@ -103,9 +106,7 @@ async def on_member_ban(guild,user):
 @bot.event
 async def on_message(message):
     message_content = message.content
-    if message.author.bot == True:
-        pass
-    else:
+    if message.author.bot != True:
         find = re.compile(regex)
         url = find.search(message_content)
         if url != None:
@@ -118,26 +119,23 @@ async def on_message(message):
                embed.add_field(name=f"{message.author.mention}",value=f"{message_content}",inline=False)
                await channel.send(embed=embed,content=f"{admin.mention}")
                await message.delete()
-'''
+
 @bot.event
 async def on_voice_state_update(member,before,after):
     left_channel = before.channel
     now_channel = after.channel
-    print(left_channel,now_channel)
     if bot.STATUS_START:
         if left_channel != None:
             if left_channel.id in myVoiceChannels:
                 log.logger.info(f"C : {member} F : Left VoiceChannel")
                 pass
             else:
-                print(len(left_channel.members))
                 if len(left_channel.members) < 1:
                     log.logger.info(f"C : {member} F : Left VoiceChannel and Delete Channel")
                     await left_channel.delete()
+                    
         if now_channel != None:
             log.logger.info(f"C : {member} F : In VoiceChannel")
-            print(now_channel.id,type(now_channel.id))
-            print(now_channel.id == 654500798281023493)
             if now_channel.id in myVoiceChannels:
                 embed=discord.Embed(title= f":video_game: 게임 개설!", description=f"아래 초대코드를 사용해서 유저들을 모아보세요!", color=0xf3bb76)
                 if now_channel.id == 654500798281023493 :
@@ -199,9 +197,7 @@ async def on_voice_state_update(member,before,after):
                     embed.add_field(name=":crossed_swords: 게임방식",value=f"자유 랭크",inline=True)
                     embed.add_field(name=":love_letter: 초대코드", value=f"{invite.url}", inline=False)
                     await channel.send(embed=embed)
-            else:
-                pass
-'''
+
 '''
 @bot.event
 async def on_member_update(before,after):
@@ -224,35 +220,6 @@ async def on_member_update(before,after):
 '''
 
 ## Discord Command ##
-@bot.command()
-async def 초대(ctx):
-    ctx.guild.invites
-
-@bot.command()
-async def 활동(ctx,after:discord.Member):
-    await ctx.message.delete()
-    print(after.activities)
-    activity = after.activities
-    streaming = activity[1]
-    print(streaming)
-    print(streaming.name)
-    print(streaming.url)
-
-@bot.command()
-async def 방송(ctx,after:discord.Member):
-    await ctx.message.delete()
-    log.logger.info(f"C: 방송알림 S: 시작 W:{after}")
-    print(after.activity.name)
-    print(after.activity.url)
-    channel= after.guild.get_channel(streamer_Channel)
-    embed=discord.Embed(title=after.activity.details,description=after.display_name,url=after.activity.url, color=0x6441A5)
-    embed.set_thumbnail(url=f"{after.activity.url}/profile")
-    embed.add_field(name="스트리머", value=after.activity.twitch_name, inline=True)
-    embed.add_field(name="디스코드", value=after.mention)
-    embed.set_footer(text=":balloon: LOL PARTY STEAMER")
-    await channel.send(content=f"여기에요! {after.display_name}님이 방송을 시작했다구요!",embed=embed)
-    log.logger.info(f"C: 방송알림 S: 완료 W:{after}")
-
 @bot.command()
 async def 도움말(ctx,detail=None):
     await ctx.message.delete()
@@ -296,7 +263,7 @@ async def 도움말(ctx,detail=None):
         embed.add_field(name="!!도움말 일반", value="일반 및 유틸 명령어을 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 파티", value="파티와 관련된 명령어를 보여줍니다.", inline=False)
         embed.add_field(name="!!도움말 인증", value="인증과 관련된 명령어를 보여줍니다.", inline=False)
-        embed.add_field(name="!!도움말 아카데미", value="인증과 관련된 명령어를 보여줍니다.", inline=False)
+        embed.add_field(name="!!도움말 아카데미", value="아카데미와 관련된 명령어를 보여줍니다.", inline=False)
     embed.set_footer(text=footer)
     await ctx.message.author.send(embed=embed)
 
