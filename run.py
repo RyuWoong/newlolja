@@ -7,7 +7,7 @@ set_token = 0
 token = myfunction.GET_KEY("token.txt")
 version = "ver.1.0.6"
 game = discord.Game(f"!!도움말 {version}" if set_token == 0 else 'LOLJA TEST Bot')
-bot = commands.Bot(command_prefix='!!' if set_token == 0 else '-',status=discord.Status.online,activity=game)
+bot = commands.Bot(command_prefix='!!' if set_token == 0 else '-',status=discord.Status.online,activity=game,help_command=None)
 regex = "(?:https?://)?discord(?:app\.com/invite|\.gg)/?[a-zA-Z0-9]+/?"
 
 ## Default Value ##
@@ -79,7 +79,7 @@ async def on_ready():
     bot.myGuild = bot.get_guild(316770615644389376)
     print("       @ Discord Bot LOLJA")
     print("       @ MADE BY. 깜뭉이")
-    print("       @ Copyright 깜뭉이. 2019")
+    print("       @ Copyright 깜뭉이. 2019 - 2020")
     print("       @ Start!")
     print("       GUILD -")
     bot.STATUS_START = True
@@ -115,7 +115,7 @@ async def on_message(message):
             if message.guild != invite.guild:
                channel = await bot.fetch_channel(611717026893004810)
                admin = get(message.guild.roles,name="관리자")
-               embed=discord.Embed(title= f":incoming_envelope: 스팸 경고!", description=f"스팸에 해당된다면 해당 유저를 처리하십시오.", color=0xf3bb76)
+               embed=discord.Embed(title= f":incoming_envelope: 스팸 경고!", description=f"스팸에 해당된다면 해당 유저를 처리하십시오.\n위 코드를 복사해서 채팅방에 붙여넣으면 해당유저가 멘션됩니다.", color=0xf3bb76)
                embed.add_field(name=f"{message.author.mention}",value=f"{message_content}",inline=False)
                await channel.send(embed=embed,content=f"{admin.mention}")
                await message.delete()
@@ -129,7 +129,6 @@ async def on_voice_state_update(member,before,after):
         if left_channel != None:
             if left_channel.id in myVoiceChannels:
                 log.logger.info(f"C : {member} F : Left VoiceChannel")
-                pass
             else:
                 if len(left_channel.members) < 1:
                     log.logger.info(f"C : {member} F : Left VoiceChannel and Delete Channel")
@@ -198,27 +197,6 @@ async def on_voice_state_update(member,before,after):
                     embed.add_field(name=":crossed_swords: 게임방식",value=f"자유 랭크",inline=True)
                     embed.add_field(name=":love_letter: 초대코드", value=f"{invite.url}", inline=False)
                     await channel.send(embed=embed)
-
-'''
-@bot.event
-async def on_member_update(before,after):
-    if after.activity == None:
-        pass
-    else:
-        if str(after.activity.type)== "ActivityType.streaming":
-            if get(after.roles,name="스트리머") == None:
-                pass
-            else:
-                log.logger.info(f"C: 방송알림 S: 시작 W:{after}")
-                channel= after.guild.get_channel(streamer_Channel)
-                embed=discord.Embed(title=after.activity.details,description=after.display_name,url=after.activity.url,  color=0x6441A5)
-                embed.set_thumbnail(url=after.avatar_url)
-                embed.add_field(name="스트리머", value=after.activity.twitch_name, inline=True)
-                embed.add_field(name="디스코드", value=after.mention)
-                embed.set_footer(text=":balloon: LOL PARTY STEAMER")
-                await channel.send(content=f"여기에요! {after.display_name}님이 방송을 시작했다구요!",embed=embed)
-                log.logger.info(f"C: 방송알림 S: 완료 W:{after}")
-'''
 
 ## Discord Command ##
 @bot.command()
