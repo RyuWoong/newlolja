@@ -216,12 +216,10 @@ async def 도움말(ctx,detail=None):
     elif (detail == "관리자"):
         embed.add_field(name="!!경고 '@유저'", value="해당 유저에게 경고를 부여합니다. 경고 3번시 차단을 부여합니다.", inline=False)
         embed.add_field(name="!!파티등록 '@팀명' '@유저'", value="파티를 생성하며, 파티장을 선정합니다.\n사전에 해당 팀의 역할 추가 및 역할멘션을 허용해주세요.", inline=False)
-        embed.add_field(name="!!교직이수 '라인' '소개글'", value="선생님을 등록합니다. 라인Top,Jungle,Mid,Bot,Sup 소개글 띄워쓰기 가능", inline=False)
+        embed.add_field(name="!!선생님등록 '@유저' '라인' '소개글'", value="선생님을 등록합니다. 라인Top,Jungle,Mid,Bot,Sup 소개글 띄워쓰기 가능", inline=False)
+        embed.add_field(name="!!선생님해제 '@유저'", value="선생님을 해제합니다.", inline=False)
     elif (detail =="아카데미"):
         embed.add_field(name="!!선생님", value="아카데미에서 가르치는 선생님 목록을 보여줍니다.", inline=False)
-        embed.add_field(name="!!입학 '@유저'", value="선생님)유저를 명령어를 호출한 선생님의 학생으로 등록합니다.", inline=False)
-        embed.add_field(name="!!퇴학", value="학생에서 탈퇴합니다.", inline=False)
-
     elif (detail == "인증"):
         embed.add_field(name="!!인증시작 '소환사명'", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.1", inline=False)
         embed.add_field(name="!!인증완료", value="서버내 디스코드와 소환사를 연결하기 위한 절차 Step.2", inline=False)
@@ -260,7 +258,7 @@ async def 인증시작(ctx,*,summoner=""):
     discord_name = member.name
     if check(ctx,"auth"): #소환사 계정 변경 방지. 이미 인증되어 있다면 못하게 제한합니다.
         log.logger.info(f"C: 인증시작 S:실패 R: 이미 인증된 유저")
-        await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
+        await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 고객센터를 통해 문의해주세요.")
     else:
         try:
             summoner_id = lol.get_summoner_id(summoner)
@@ -290,7 +288,7 @@ async def 인증완료(ctx):
     member = ctx.message.author #info
     discord_id = member.id
     if check(ctx,"auth"):
-        await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 **깜뭉이**에게 문의해주세요.")
+        await ctx.send(f"{member.mention}\n:octagonal_sign: 이미 인증이 되어있습니다.\n:exclamation: 연동된 소환사를 변경하길 원하신다면 고객센터를 통해 문의해주세요.")
         return
     if not check(ctx,"wait"):
         await ctx.send(f"{member.mention}\n:exclamation: !!인증시작부터 먼저 입력해주세요.\n:question: 자세한 사항은 `!!도움말 인증`을 확인해주세요.")
@@ -458,7 +456,7 @@ async def 스트리머등록(ctx,streamer: discord.Member,url):
         else:
             await streamer.add_roles(role)
             await ctx.message.author.send(f"{streamer.mention}님을 스트리머로 등록 했습니다.")
-            await ctx.streamer.send(f"**{name}**님 안녕하세요? 저희 **LOL PARTY**와 함께 하시게 된 것을 진심으로 환영합니다.\n도움이 필요하시면 **깜뭉이**에게 문의 부탁드립니다! 또한 필요한 기능이 있으시다면 언제든 말씀해주세요.\n\n:gift: 서버내 혜택\n1. 스트리머 역할 부여 및 `!!스트리머` 명령어로 스트리머 소개 (`!!스트리머인사말 '인사말'` 명령어로 스트리머 인사말을 편집 할 수 있습니다.)\n2. 스트리머 채널 및 채팅 채널에서 방송 공지 가능 (향후 봇이 자동적으로 알리도록 변경)\n\n:octagonal_sign: 서버 요청사항\n1. 싹둑이로 서버 초대코드 노출\n2. 간간히 서버내 시참방송")
+            await ctx.streamer.send(f"**{name}**님 안녕하세요? 저희 **LOL PARTY**와 함께 하시게 된 것을 진심으로 환영합니다.\n도움이 필요하시면 고객센터를 통해 문의 부탁드립니다! 또한 필요한 기능이 있으시다면 언제든 말씀해주세요.\n\n:gift: 서버내 혜택\n1. 스트리머 역할 부여 및 `!!스트리머` 명령어로 스트리머 소개 (`!!스트리머인사말 '인사말'` 명령어로 스트리머 인사말을 편집 할 수 있습니다.)\n2. 스트리머 채널 및 채팅 채널에서 방송 공지 가능 (향후 봇이 자동적으로 알리도록 변경)\n\n:octagonal_sign: 서버 요청사항\n1. 싹둑이로 서버 초대코드 노출\n2. 간간히 서버내 시참방송")
             log.logger.info(f"C: 스트리머등록 S: 완료 W: {ctx.author.name} T: {streamer.name}")
     else:
         pass
@@ -573,8 +571,8 @@ async def 파티등록(ctx,role_name:discord.Role,member:discord.Member):
             await member.add_roles(role_name)
             await category.create_text_channel(name=f"🎉{party_name}",overwrites=overwrite,topic=f"{party_name} 파티의 채널입니다.")
             embed=discord.Embed(title= f"🎉{party_name}", description=f"파티장 {member.mention}", color=role.color)
-            embed.add_field(name=":book: 파티 약관",value="1. LOL PARTY 서버 내 파티는  LOL PARTY를 대표하는 얼굴입니다. 따라서 내부 활동 및 외부와 스크림 시 신사적인 모습을 보여주시길 바랍니다.\n2. LOL PARTY내 파티는 일반게임,랭크게임,스크림 등의 음성채팅 활동시 서버 내 음성채팅을 활용 하셔야합니다.\n3. 파티의 활동내역이 저조 하거나, 뉴비 배척, 분란 등의 문제가 발생 시 관리자는 파티에 사유 통보 후 파티를 해체 시킬 수 있습니다.\n4. 파티장은 파티 운영에 필요한 기능 및 기타 사항들을 관리자에게 언제든 요구할 수 있습니다.")
-            embed.add_field(name=":bookmark_tabs: 파티장 명령어",value="파티장은 아래와 같이 명령어를 사용하실 수 있습니다.\n`!!파티가입 @유저` `!!파티탈퇴 @유저` `!!파티편집 인사말`\n 궁금하거나 어려운 사항은 관리자에게 질문 부탁드립니다.")
+            embed.add_field(name=":book: 파티 약관",value="1. LOL PARTY 서버 내 파티는 LOL PARTY를 대표하는 얼굴입니다. 따라서 내부 활동 및 외부와 스크림 시 신사적인 모습을 보여주시길 바랍니다.\n2. LOL PARTY내 파티는 일반게임,랭크게임,스크림 등의 음성채팅 활동시 서버 내 음성채팅을 활용 하셔야합니다.\n3. 파티의 활동내역이 저조 하거나, 뉴비 배척, 분란 등의 문제가 발생 시 관리자는 파티에 사유 통보 후 파티를 해체 시킬 수 있습니다.\n4. 파티장은 파티 운영에 필요한 기능 및 기타 사항들을 관리자에게 언제든 요구할 수 있습니다.")
+            embed.add_field(name=":bookmark_tabs: 파티장 명령어",value="파티장은 아래와 같이 명령어를 사용하실 수 있습니다.\n`!!파티가입 @유저` `!!파티탈퇴 @유저` `!!파티편집 인사말`\n 궁금하거나 어려운 사항은 고객센터를 통해 질문 부탁드립니다.")
             embed.set_footer(text=footer)
             await member.send(embed=embed)
             log.logger.info(f"C: 파티등록 S: 완료 W: {ctx.message.author.name} T: {member.name}")
@@ -693,10 +691,10 @@ async def 파티장위임(ctx,leader:discord.Member,member:discord.Member):
             log.logger.info(f"C: 파티장위임 S: 완료 B: {leader} A: {member}")
 
 @bot.command()
-async def 교직이수(ctx,member:discord.Member,line,*,dec):
+async def 선생님등록(ctx,member:discord.Member,line,*,dec):
     await ctx.message.delete()
     if check(ctx,"admin"):
-        log.logger.error(f"C: 교직이수 S: 시작")
+        log.logger.info(f"C: 선생님등록 S: 시작")
         role = get(member.roles,name="인증")
         if role != None:
             role = get(ctx.guild.roles,name="선생님")
@@ -704,17 +702,34 @@ async def 교직이수(ctx,member:discord.Member,line,*,dec):
                 db.set_teacher(member.id,member.name,line,dec)
                 await member.add_roles(role)
             except Exception as ex:
-                log.logger.error(f"C: 교직이수 S: 실패 R: {ex}")
+                log.logger.error(f"C: 선생님등록 S: 실패 R: {ex}")
             else:
-                print("완료")
-                await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다.\n이제 학생을 받고 가르칠 수 있습니다. LOLJA 명령어를 확인해주세요.")
-                log.logger.error(f"C: 교직이수 S: 완료 T: {member}")
+                await ctx.send(f":white_check_mark:완료\n{member.mention}님께 선생님 역할을 부여했습니다.")
+                await member.send(f":confetti_ball: 축하합니다! 선생님이 되셨습니다. 이제 학생을 받고 가르칠 수 있습니다.\n\n아래는 선생님께 드리는 당부 말씀입니다.\n```1. 롤린이를 위해 봉사하시는 선생님들께 우선 감사드립니다.\n2. 기본적으로 무료로 봉사하는 것을 원칙으로 합니다.3. 강의 방식은 자율이지만, 대리와 같이 약관에 위배되는 행동은 금합니다.\n4. 문제가 발생시 고객센터를 통해 관리자에게 문의해주시면 빠르게 응대해드리겠습니다.```\n혼자서 놀지말고 다같이 놀자 **LOL PARTY!**")
+                log.logger.info(f"C: 선생님등록 S: 완료 T: {member}")
         else:
             await ctx.author.send(f"{member}는 인증된 유저가 아닙니다.")
-            log.logger.error(f"C: 교직이수 S: 실패 R: 인증된 유저가 아님")
+            log.logger.info(f"C: 선생님등록 S: 실패 R: 인증된 유저가 아닙니다.")
     else:
         pass
 
+@bot.command()
+async def 선생님해제(ctx,member:discord.Member):
+    await ctx.message.delete()
+    if check(ctx,"admin"):
+        log.logger.info(f"c: 선생님해제 S: 시작")
+        role = get(member.roles,name="선생님")
+        if role == None:
+            await ctx.send(f":warning:오류\n{member.mention}은 선생님이 아닙니다.")
+        else:
+            try:
+                db.del_teacher(member.id)
+                await member.remove_roles(role)
+            except Exception as ex:
+                log.logger.error(f"C: 선생님해제 S: 실패 R: {ex}")
+                await ctx.send(f":warning:오류\n{member.mention} 선생님 해제 실패")
+            else:
+                await ctx.send(f":white_check_mark:완료\n{member.mention}님 노고에 감사드립니다.")
 
 
 @bot.command()
@@ -732,10 +747,10 @@ async def 선생님(ctx):
             line = teacher[2]
             dec = teacher[3]
             embed.add_field(name=f"{_discord} 선생님", value=f"Line. {line}\n:speech_left: {dec}", inline=False)
-        embed.set_footer(text="롤 아카데미 | 2019.12.19")
+        embed.set_footer(text="롤 아카데미 | 창립일 2019.12.19")
         await ctx.message.author.send(embed=embed)
         log.logger.info(f"C: 선생님 S: 완료 W: {ctx.message.author}")
-
+'''
 @bot.command()
 async def 입학(ctx,member:discord.Member):
     await ctx.message.delete()
@@ -816,6 +831,7 @@ async def 졸업(ctx,member:discord.Member):
                 embed.add_field(name=":man_mage: 선생님", value=f"{teacher.mention}", inline=False)
                 embed.set_footer(text="LOL Academy | 개교. 2019.12.19")
                 await Channel.send(embed=embed)
+'''
 
 @bot.command()
 async def 공지(ctx):
