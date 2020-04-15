@@ -122,8 +122,10 @@ async def on_message(message):
     await bot.process_commands(message)
 
 @bot.event
-async def on_group_join(channel,user):
-    await user.send(":sunflower: 어서오세요! **롤파티 LOLPARTY** 오신 것을 환영합니다. :sunflower:\n\n저희 **롤파티 LOLPARTY**는 한국 리그오브레전드 커뮤니티 서버입니다.\n혼자서 하는 게임은 그만, 다같이 즐겁게 하자는 모토로 개설 되었습니다.\n\n처음 서버에 오셨다면 `📔롤파티이용방법`을 꼭 읽어주세요.\n롤파티 LOLPARTY는 전용 봇 **LOLJA**가 소환사를 위해 \n음성채팅방 자동 개설, 격전파티구성, 소환사티어 검색 등 다양한 기능을 지원합니다.\n\n서버에서 게임플레이에 어려움이 있으시다면\n`📕게임플레이방법`을 읽어주세요.\n\n그럼 **롤파티 LOL PARTY** 에서 즐거운 시간 보내시길 바랍니다!:hearts: ")
+async def on_member_join(member):
+    print(member)
+    await member.send(":sunflower: 어서오세요! **롤파티 LOLPARTY** 오신 것을 환영합니다. :sunflower:\n\n저희 **롤파티 LOLPARTY**는 한국 리그오브레전드 커뮤니티 서버입니다.\n혼자서 하는 게임은 그만, 다같이 즐겁게 하자는 모토로 개설 되었습니다.\n\n처음 서버에 오셨다면 `📔롤파티이용방법`을 꼭 읽어주세요.\n롤파티 LOLPARTY는 전용 봇 **LOLJA**가 소환사를 위해 \n음성채팅방 자동 개설, 격전파티구성, 소환사티어 검색 등 다양한 기능을 지원합니다.\n\n서버에서 게임플레이에 어려움이 있으시다면\n`📕게임플레이방법`을 읽어주세요.\n\n그럼 **롤파티 LOL PARTY** 에서 즐거운 시간 보내시길 바랍니다!:hearts: ")
+
 
 @bot.event
 async def on_voice_state_update(member,before,after):
