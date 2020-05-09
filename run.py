@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
-set_token = 0
+set_token = 1
 token = myfunction.GET_KEY("token.txt")
 version = "ver.1.0.7"
 game = discord.Game(f"!!도움말 {version}" if set_token == 0 else 'LOLJA TEST Bot')
@@ -150,7 +150,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="일반 게임",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    new_channel = await category.create_voice_channel(name="일반 게임: 방제설정 →",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
                     invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(normal_Channel)
                     await member.move_to(new_channel)
@@ -165,12 +165,12 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="TFT 게임",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
+                    new_channel = await category.create_voice_channel(name="칼바람 나락: 방제설정 →",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
                     invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(chess_Channel)
                     await member.move_to(new_channel)
                     embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
-                    embed.add_field(name=":crossed_swords: 게임방식",value=f"전략적 팀 전투",inline=True)
+                    embed.add_field(name=":crossed_swords: 게임방식",value=f"칼바람 나락",inline=True)
                     embed.add_field(name=":love_letter: 초대코드", value=f"{invite.url}", inline=False)
                     await channel.send(embed=embed)
 
@@ -180,7 +180,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="듀오 게임",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
+                    new_channel = await category.create_voice_channel(name="듀오 랭크: 방제설정 →",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=2)
                     invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
@@ -195,7 +195,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="자유 랭크 게임",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+                    new_channel = await category.create_voice_channel(name="자유 랭크: 방제설정 →",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
                     invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(rank_Channel)
                     await member.move_to(new_channel)
@@ -746,7 +746,7 @@ async def 선생님(ctx):
     except Exception as ex:
         log.logger.error(f"C: 선생님 S: 실패 R: {ex}")
     else:
-        embed=discord.Embed(title= f":man_teacher: 선생님 목록", description=f"입학을 원하시는 분은 마음에 드는 선생님께 문의하세요.", color=0xf3bb76)
+        embed=discord.Embed(title= f":man_teacher: 선생님 목록", description=f"입학을 원하시는 분은 마음에 드는 선생님께 문의하세요.", color=0x40E0D0)
         for teacher in teachers:
             discord_id = teacher[0]
             _discord = ctx.guild.get_member(int(discord_id))
@@ -756,6 +756,17 @@ async def 선생님(ctx):
         embed.set_footer(text="롤 아카데미 | 창립일 2019.12.19")
         await ctx.message.author.send(embed=embed)
         log.logger.info(f"C: 선생님 S: 완료 W: {ctx.message.author}")
+
+@bot.command()
+async def 수강평(ctx,student:discord.Member,teacher:discord.Member,*,comment):
+    await ctx.message.delete()
+    embed=discord.Embed(title= f":sunflower: LOL Academy 수강평", description=f"LOL Academy Review", color=0x40E0D0)
+    embed.add_field(name=f":man_student: 수강생", value=f"{student.mention}", inline=True)
+    embed.add_field(name=f":man_teacher: 선생님", value=f"{teacher.mention}", inline=True)
+    embed.add_field(name=f":pencil: 수강후기", value=f"{comment}", inline=False)
+    await ctx.send(embed=embed)
+
+
 '''
 @bot.command()
 async def 입학(ctx,member:discord.Member):
