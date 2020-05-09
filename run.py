@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
-set_token = 1
+set_token = 0
 token = myfunction.GET_KEY("token.txt")
 version = "ver.1.0.7"
 game = discord.Game(f"!!도움말 {version}" if set_token == 0 else 'LOLJA TEST Bot')
@@ -165,12 +165,12 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="칼바람 나락: 방제설정 →",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
+                    new_channel = await category.create_voice_channel(name="칼바람나락: 방제설정 →",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
                     invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(chess_Channel)
                     await member.move_to(new_channel)
                     embed.add_field(name=":hammer: 개설자",value=f"{member.mention}",inline=True)
-                    embed.add_field(name=":crossed_swords: 게임방식",value=f"칼바람 나락",inline=True)
+                    embed.add_field(name=":crossed_swords: 게임방식",value=f"칼바람나락",inline=True)
                     embed.add_field(name=":love_letter: 초대코드", value=f"{invite.url}", inline=False)
                     await channel.send(embed=embed)
 
