@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.utils import get
 
 ## Set Bot 테스트시 Token키 및 Command_prefix 변경
-set_token = 0
+set_token = 1
 token = myfunction.GET_KEY("token.txt")
 version = "ver.1.0.7"
 game = discord.Game(f"!!도움말 {version}" if set_token == 0 else 'LOLJA TEST Bot')
@@ -103,23 +103,32 @@ async def on_member_ban(guild,user):
     embed.add_field(name="제재사유", value=f"경고 누적 혹은 스팸, 악성유저로 서버에서 차단되었습니다.", inline=False)
     await channel.send(embed=embed)
 
+# @bot.event
+# async def on_message(message):
+#     message_content = message.content
+#     if message.author.bot != True:
+#         find = re.compile(regex)
+#         url = find.search(message_content)
+#         if url != None:
+#             url = url.group()
+#             invite = await bot.fetch_invite(url)
+#             if message.guild != invite.guild:
+#                channel = await bot.fetch_channel(611717026893004810)
+#                admin = get(message.guild.roles,name="관리자")
+#                embed=discord.Embed(title= f":incoming_envelope: 스팸 경고!", description=f"스팸에 해당된다면 해당 유저를 처리하십시오.\n위 코드를 복사해서 채팅방에 붙여넣으면 해당유저가 멘션됩니다.", color=0xf3bb76)
+#                embed.add_field(name=f"{message.author.mention}",value=f"{message_content}",inline=False)
+#                await channel.send(embed=embed,content=f"{admin.mention}")
+#                await message.delete()
+#     await bot.process_commands(message)
+
 @bot.event
-async def on_message(message):
-    message_content = message.content
-    if message.author.bot != True:
-        find = re.compile(regex)
-        url = find.search(message_content)
-        if url != None:
-            url = url.group()
-            invite = await bot.fetch_invite(url)
-            if message.guild != invite.guild:
-               channel = await bot.fetch_channel(611717026893004810)
-               admin = get(message.guild.roles,name="관리자")
-               embed=discord.Embed(title= f":incoming_envelope: 스팸 경고!", description=f"스팸에 해당된다면 해당 유저를 처리하십시오.\n위 코드를 복사해서 채팅방에 붙여넣으면 해당유저가 멘션됩니다.", color=0xf3bb76)
-               embed.add_field(name=f"{message.author.mention}",value=f"{message_content}",inline=False)
-               await channel.send(embed=embed,content=f"{admin.mention}")
-               await message.delete()
-    await bot.process_commands(message)
+async def on_message(message): # 메세지가 채널에 올라왔을 때 (해당 매세지)
+    message_content = message.content # 메세지 내용을 message_content라는 변수에 담고
+    bad = message_content.find("씨발")
+    if bad >= 0:
+        await message.channel.send("바른말 고운말을 사용합시다.")
+        await message.delete()
+    await bot.process_commands(message) # 메세지 중 명령어가 있을 경우 처리해주는 코드
 
 @bot.event
 async def on_member_join(member):
@@ -165,7 +174,7 @@ async def on_voice_state_update(member,before,after):
                     overwrite = {
                         member : discord.PermissionOverwrite(manage_channels=True)
                     }
-                    new_channel = await category.create_voice_channel(name="칼바람나락: 방제설정 →",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=8)
+                    new_channel = await category.create_voice_channel(name="칼바람나락: 방제설정 →",overwrites=overwrite,bitrate=bot.myGuild.bitrate_limit,user_limit=5)
                     invite = await new_channel.create_invite(max_age=720)
                     channel = bot.myGuild.get_channel(chess_Channel)
                     await member.move_to(new_channel)
@@ -935,7 +944,7 @@ async def 고객센터(ctx):
     log.logger.info(f"C: 고객센터 S: 완료 W: {ctx.message.author}")
 
 @bot.command()
-async def 내전(ctx):
+async def 내전준비(ctx):
     await ctx.message.delete()
     log.logger.info(f"C: 내전 S: 시작 W: {ctx.message.author}")
     channel = ctx.guild.get_channel(waiting_Channel)
@@ -963,7 +972,7 @@ async def 내전(ctx):
     embed=discord.Embed(title= f"LOL Party 내전",description=f"LOL PARTY 내전 랜덤 팀 배정", color=0xf3bb76) 
     team_num = 1 
     for team1 in teams: #팀 수 만큼 반복한다. 팀 음성 채널을 개설하고
-        team_Channel = await category.create_voice_channel(name=f"🔥TEAM. {team_num}",bitrate=bot.myGuild.bitrate_limit,user_limit=5)
+        team_Channel = await categte_voice_channel(naory.creame=f"🔥TEAM. {team_num}",bitrate=bot.myGuild.bitrate_limit,user_limit=5)
         member_mention = list()
         print(member_mention)
         for member in team1: #팀내 멤버수 만큼 반복한다. 멤버 멘션 값을 저장하고 멤버를 채널로 옮긴다.
@@ -1013,6 +1022,40 @@ async def 내전종료(ctx):
         for member in members:
             await member.remove_roles(role)
         await text_Channel.send("내전 참가자를 초기화 했습니다.")
+
+
+@bot.command()
+async def 내전신청(ctx,category="",num=""):
+    await ctx.message.delete() #신청 메세지를 삭제합니다.
+    member = ctx.message.author  # 명령어를 입력한 유저를 가져옵니다.
+    try:
+        role = get(ctx.guild.roles,name=f"{category}/{num}") #신청한 게임번호의 역할을 가져옵니다.
+    except:
+        await member.send("내전 신청에 실패 하였습니다. 정확한 게임 종목과 번호를 입력해주세요.") # 해당 내전역할이 없으면 발송합니다. 또는 명령어 입력 오류
+    else:
+        for tear in emblem_Index:
+            print("check")
+            tear_role = get(member.roles,name=f"{tear}")
+            if tear_role != None:
+                break
+        if tear_role != None:
+            await member.add_roles(role)
+            await member.send(f"내전 신청이 완료 되었습니다.\n게임종목 : {category}\n게임번호 : {num}") 
+            await ctx.send(f"내전 {member.mention} , {tear_role.mention}")
+
+        
+
+
+@bot.command()
+async def 티어(ctx,tear=""):
+    member = ctx.message.author
+    try:
+        role = get(ctx.guild.roles,name=f"{tear}")
+    except:
+        await member.send("티어 신청실패") # 해당 역할이 없으면 발송합니다. 또는 명령어 입력 오류
+    else:
+        await member.add_roles(role)
+        await member.send(f"{role} 티어 등록 완료 되었습니다.") 
 
 
 @bot.command()
